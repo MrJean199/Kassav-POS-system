@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kassav Vero. • POS</title>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  
+  <style>
+    :root {
+      --primary: #1D9E75;
+      --primary-dark: #0F6E56;
+      --accent: #E67E22;
+      --bg: #F8F7F2;
+      --card: #FFFFFF;
+      --text: #2C2C2C;
+      --text-light: #555555;
+      --border: #E5E0D8;
+      --success: #1D9E75;
+      --danger: #E24B4A;
+      --free: #8B5CF6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 20px;
+    }
+
+    .container { max-width: 1400px; margin: 0 auto; }
+
+    .header { text-align: center; margin-bottom: 24px; }
+    .header h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.02em; }
+    .header p { color: var(--text-light); font-size: 1.05rem; }
+
+    .tabs {
+      display: flex; gap: 12px; margin-bottom: 24px; background: white;
+      padding: 8px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      width: fit-content; margin: 0 auto; position: relative;
+    }
+    .tab {
+      padding: 14px 28px; border: none; border-radius: 12px; background: transparent;
+      font-size: 15px; font-weight: 600; color: var(--text-light); cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
+    }
+    .tab:hover { background: #f5f3eb; transform: translateY(-1px); }
+    .tab.active {
+      background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(29,158,117,0.35);
+    }
+
+    /* Notification badge */
+    .notification-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #E24B4A;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(226,75,74,0.4);
+      animation: badgePop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .notification-badge.show {
+      display: flex;
+    }
+
+    @keyframes badgePop {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .pos-wrap { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+
+    .menu-section, .panel {
+      background: white; border-radius: 20px; padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+    }
+
+    .section-title {
+      font-size: 1.1rem; font-weight: 600; color: var(--text-light);
+      margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .menu-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;
+    }
+
+    .item-card {
+      background: white; border: 1px solid var(--border); border-radius: 18px;
+      padding: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .item-card:hover { transform: translateY(-6px); box-shadow: 0 15px 30px rgba(0,0,0,0.12); border-color: var(--primary); }
+
+    .item-name { font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; }
+    .price-badge { display: inline-block; font-size: 12px; padding: 4px 12px; border-radius: 30px; font-weight: 600; margin-bottom: 12px; }
+    .badge-plain { background: #EDE9E0; color: #5C5544; }
+    .badge-special { background: #FEF3C7; color: #92400E; }
+
+    .item-price { font-size: 2.1rem; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
+
+    .qty-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #F8F7F2; border-radius: 14px; padding: 8px;
+    }
+    .qty-btn {
+      width: 52px; height: 52px; border: none; border-radius: 12px; font-size: 26px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .qty-btn.minus { background: #FFF1F1; color: var(--danger); }
+    .qty-btn.plus { background: #E6F7F0; color: var(--primary); }
+    .qty-btn:hover { transform: scale(1.12); }
+
+    .free-btn {
+      width: 100%; margin-top: 12px; padding: 12px; border-radius: 12px;
+      background: #F3E8FF; color: var(--free); border: 1px solid #C4B5FD;
+      font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .free-btn.active {
+      background: var(--free); color: white; border-color: var(--free);
+    }
+
+    .order-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .order-total {
+      font-size: 1.4rem; font-weight: 700; padding-top: 16px; margin-top: 12px;
+      border-top: 2px solid var(--border); display: flex; justify-content: space-between; color: var(--primary);
+    }
+
+    .checkout-btn {
+      width: 100%; padding: 18px; font-size: 1.2rem; font-weight: 700;
+      background: var(--primary); color: white; border: none; border-radius: 16px;
+      cursor: pointer; margin-top: 12px; transition: all 0.25s;
+      box-shadow: 0 6px 20px rgba(29,158,117,0.35);
+    }
+    .checkout-btn:hover { background: var(--primary-dark); transform: translateY(-3px); }
+
+    .clear-btn { font-size: 13px; color: var(--danger); background: none; border: none; cursor: pointer; text-decoration: underline; }
+
+    .search-box {
+      width: 100%; padding: 14px 16px; border: 1px solid var(--border);
+      border-radius: 12px; font-size: 15px; margin-bottom: 16px;
+    }
+
+    .priority-star {
+      cursor: pointer; font-size: 1.4rem; color: #ccc; transition: color 0.2s;
+    }
+    .priority-star.active { color: #F59E0B; }
+
+    .to-bake {
+      background: #FEF3C7; border-radius: 16px; padding: 20px; margin: 20px 0;
+    }
+    .to-bake h3 { margin-bottom: 16px; color: #92400E; }
+    .customer-name { font-size: 12px; color: #92400E; opacity: 0.85; }
+
+    .prepaid-toggle { display: flex; align-items: center; gap: 8px; margin: 16px 0; font-weight: 600; color: #1E40AF; }
+
+    .add-po-btn, .po-collect-btn {
+      width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 600;
+      border: none; border-radius: 14px; cursor: pointer; transition: all 0.25s;
+    }
+    .add-po-btn { background: #185FA5; color: white; }
+    .add-po-btn:hover { background: #0d4070; transform: translateY(-2px); }
+    .po-collect-btn { background: var(--primary); color: white; }
+    .po-collect-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+    .po-delete-btn {
+      padding: 12px 20px; background: #FFF1F1; color: var(--danger);
+      border: 1px solid #F5B8B8; border-radius: 12px; cursor: pointer;
+    }
+
+    /* Connection status */
+    .connection-status {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 1000;
+    }
+    .connection-status.online {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+    .connection-status.offline {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+
+    /* Notification permission prompt */
+    .notif-prompt {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 16px 24px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      font-weight: 500;
+      color: var(--text);
+      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .notif-prompt.show { display: flex; }
+    .notif-prompt button {
+      padding: 8px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .notif-prompt button:hover { background: var(--primary-dark); }
+
+    @keyframes slideUp {
+      from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Connection indicator -->
+  <div class="connection-status online" id="connection-status">🟢 Connected</div>
+
+  <!-- Notification permission prompt -->
+  <div class="notif-prompt" id="notif-prompt">
+    <span>🔔 Get notified of new orders</span>
+    <button onclick="requestNotificationPermission()">Enable</button>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1> Kassav Vero.</h1>
+      <p>Fresh • Simple • Delicious</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('pos',this)">🧾 Point of Sale</button>
+      <button class="tab" onclick="switchTab('preorders',this)" style="position:relative;">
+        📋 Pre-orders
+        <span class="notification-badge" id="po-badge">0</span>
+      </button>
+      <button class="tab" onclick="switchTab('summary',this)">📊 Day Summary</button>
+    </div>
+
+    <!-- POS -->
+    <div class="page active" id="page-pos">
+      <div class="pos-wrap">
+        <div class="menu-section">
+          <div class="section-title">Menu</div>
+          <div class="menu-grid" id="menu-grid"></div>
+          <button id="free-all-btn" class="free-btn" onclick="toggleAllFree()">🎟️ Mark All Items as Free</button>
+        </div>
+
+        <div class="sidebar">
+          <div class="panel">
+            <div class="panel-title"><span>Current Order</span></div>
+            <div id="order-lines"><p style="text-align:center; color:#888; padding:40px 0;">No items yet</p></div>
+            <div class="order-total">
+              <span>Total</span>
+              <span id="order-total">$0.00</span>
+            </div>
+            <button class="checkout-btn" id="checkout-btn" disabled onclick="checkout()">Complete Sale</button>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">
+              <span>Today's Sales</span>
+              <button class="clear-btn" onclick="clearSales()">Clear Day</button>
+            </div>
+            <div id="sales-list"></div>
+            <div class="order-total" style="margin-top:16px;">
+              <span>Day Total</span>
+              <span id="day-total">$0.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRE-ORDERS -->
+    <div class="page" id="page-preorders">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div class="panel">
+          <div class="section-title">New / Edit Pre-order</div>
+          <input id="po-id" type="hidden">
+
+          <div style="margin-bottom:20px;">
+            <label style="display:block; font-size:13px; font-weight:600; color:#666; margin-bottom:8px;">Customer Name</label>
+            <input id="po-name" placeholder="e.g. Sarah Johnson" style="width:100%; padding:14px 16px; border:1px solid var(--border); border-radius:12px; font-size:15px;">
+          </div>
+
+          <div class="prepaid-toggle">
+            <input type="checkbox" id="po-prepaid">
+            <label for="po-prepaid">This order is Prepaid</label>
+          </div>
+
+          <div class="section-title" style="margin:24px 0 16px;">Select Items</div>
+          <div id="po-item-grid"></div>
+
+          <div style="margin:28px 0; display:flex; justify-content:space-between; align-items:center; font-size:1.15rem;">
+            <span style="color:#666;">Order Total</span>
+            <span id="po-preview-total" style="font-weight:700; color:var(--primary); font-size:1.7rem;">$0.00</span>
+          </div>
+
+          <button class="add-po-btn" id="save-po-btn" onclick="savePreorder()">Save Pre-order</button>
+        </div>
+
+        <div>
+          <div class="panel">
+            <div class="section-title">Kassavas to make Today</div>
+            <div id="to-bake-list" class="to-bake"></div>
+          </div>
+
+          <div class="panel" style="margin-top:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div class="section-title" style="margin:0;">Pending Pre-orders</div>
+              <input type="file" id="csv-import" accept=".csv" style="display:none;" onchange="importCSV(this)">
+              <button onclick="document.getElementById('csv-import').click()" style="padding:8px 16px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; font-size:14px;">Import CSV</button>
+            </div>
+            <input type="text" id="po-search" class="search-box" placeholder="Search customer name..." onkeyup="renderPoList()">
+            <div id="po-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="page" id="page-summary">
+      <div id="invoice-box" style="background:white; border-radius:24px; padding:40px 50px; box-shadow:0 15px 40px rgba(0,0,0,0.1); max-width:820px; margin:0 auto;">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== FIREBASE SETUP ====================
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8pNws60ZIdSXfbWmbIC7H3EOQwjIH7bw",
+      authDomain: "pos-system-45a85.firebaseapp.com",
+      databaseURL: "https://pos-system-45a85-default-rtdb.firebaseio.com",
+      projectId: "pos-system-45a85",
+      storageBucket: "pos-system-45a85.firebasestorage.app",
+      messagingSenderId: "626364063546",
+      appId: "1:626364063546:web:d0c6d73837e00d5d747a03",
+      measurementId: "G-9SXNLQ4GSL"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    
+    // ==================== DATA & ITEMS ====================
+    const ITEMS = [
+      {id:'sweet', name:'Plain Sweet', price:7, tier:'plain'},
+      {id:'salt',  name:'Salt', price:7, tier:'plain'},
+      {id:'choc',  name:'Chocolate Chip', price:8, tier:'special'},
+      {id:'cherry',name:'Cherry Raisin', price:8, tier:'special'},
+      {id:'cran',  name:'Cranberry', price:8, tier:'special'},
+      {id:'ginger',name:'Ginger', price:8, tier:'special'},
+      {id:'Spicy',name:'Spicy', price:8, tier:'special'},
+    ];
+
+    let order = {};
+    let isAllFree = false;
+    let editingPoId = null;
+    let poOrder = {};
+    let sales = [];
+    let preorders = [];
+    let txCount = 0;
+    let poCount = 0;
+    let flavourTotals = {};
+    let deviceId = 'device_' + Math.random().toString(36).substr(2, 9);
+    let newPoCount = 0;
+    let lastKnownPoIds = new Set();
+    let notificationEnabled = false;
+    
+    ITEMS.forEach(i => flavourTotals[i.id] = 0);
+
+    const fmt = n => '$' + n.toFixed(2);
+    const today = () => new Date().toLocaleDateString([], {year:'numeric', month:'long', day:'numeric'});
+    const timeNow = () => new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+    // ====================== NOTIFICATION SYSTEM ======================
+    
+    // Check if notifications are supported
+    function checkNotificationSupport() {
+      if ('Notification' in window && 'serviceWorker' in navigator) {
+        if (Notification.permission === 'granted') {
+          notificationEnabled = true;
+        } else if (Notification.permission === 'default') {
+          // Show prompt after 3 seconds
+          setTimeout(() => {
+            document.getElementById('notif-prompt').classList.add('show');
+          }, 3000);
+        }
+      }
+    }
+
+    // Request notification permission
+    function requestNotificationPermission() {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          notificationEnabled = true;
+          document.getElementById('notif-prompt').classList.remove('show');
+          // Test notification
+          showNotification('Kassav Vero.', '🔔 Notifications enabled! You\'ll be alerted of new orders.');
+        }
+      });
+    }
+
+    // Show browser notification
+    function showNotification(title, body) {
+      if (!notificationEnabled) return;
+      
+      if ('Notification' in window && Notification.permission === 'granted') {
+        // Use service worker if available for persistent notifications
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.ready.then(registration => {
+            registration.showNotification(title, {
+              body: body,
+              icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%231D9E75"/><text x="50" y="65" text-anchor="middle" fill="white" font-size="40" font-weight="bold">K</text></svg>',
+              badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%231D9E75"/><text x="50" y="65" text-anchor="middle" fill="white" font-size="40" font-weight="bold">K</text></svg>',
+              vibrate: [200, 100, 200],
+              tag: 'kassav-vero-notification',
+              requireInteraction: false,
+              silent: false
+            });
+          });
+        } else {
+          // Fallback to regular notification
+          new Notification(title, {
+            body: body,
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%231D9E75"/></svg>'
+          });
+        }
+      }
+    }
+
+    // ====================== FIREBASE SYNC ======================
+    
+    // Connection monitoring
+    const connectedRef = database.ref('.info/connected');
+    connectedRef.on('value', (snap) => {
+      const status = document.getElementById('connection-status');
+      if (snap.val() === true) {
+        status.textContent = '🟢 Connected';
+        status.className = 'connection-status online';
+      } else {
+        status.textContent = '🔴 Disconnected';
+        status.className = 'connection-status offline';
+      }
+    });
+
+    // Track device presence
+    const presenceRef = database.ref('presence');
+    presenceRef.child(deviceId).set({
+      lastSeen: firebase.database.ServerValue.TIMESTAMP,
+      device: navigator.userAgent.includes('Mobile') ? '📱 Mobile' : '💻 Desktop'
+    });
+    presenceRef.child(deviceId).onDisconnect().remove();
+
+    // Listen for sales changes
+    database.ref('sales').on('value', (snapshot) => {
+      const data = snapshot.val();
+      sales = data ? Object.values(data) : [];
+      txCount = sales.length;
+      
+      ITEMS.forEach(i => flavourTotals[i.id] = 0);
+      sales.forEach(s => {
+        if (s.items && !s.isPrepaid) {
+          s.items.forEach(i => {
+            flavourTotals[i.id] = (flavourTotals[i.id] || 0) + i.qty;
+          });
+        }
+      });
+      
+      renderSalesList();
+      renderInvoice();
+    });
+
+    // Listen for preorders changes with notification support
+    database.ref('preorders').on('value', (snapshot) => {
+      const data = snapshot.val();
+      const newPreorders = data ? Object.values(data) : [];
+      
+      // Check for new pre-orders
+      if (preorders.length > 0) {
+        const currentIds = new Set(newPreorders.map(p => p.id));
+        
+        newPreorders.forEach(po => {
+          // New pre-order added
+          if (!lastKnownPoIds.has(po.id) && lastKnownPoIds.size > 0) {
+            newPoCount++;
+            updateBadge();
+            showNotification('📋 New Order!', `${po.name} placed an order for ${po.items.map(i => i.name + ' ×' + i.qty).join(', ')}`);
+          }
+          
+          // Pre-order collected
+          if (po.collected && lastKnownPoIds.has(po.id)) {
+            const oldPo = preorders.find(p => p.id === po.id);
+            if (oldPo && !oldPo.collected) {
+              showNotification('✅ Order Collected', `${po.name} collected their order.`);
+            }
+          }
+        });
+        
+        lastKnownPoIds = currentIds;
+      } else {
+        // First load - populate the set
+        lastKnownPoIds = new Set(newPreorders.map(p => p.id));
+      }
+      
+      preorders = newPreorders;
+      poCount = preorders.length;
+      
+      renderPoList();
+      renderToBake();
+      renderInvoice();
+    });
+
+    // Update notification badge
+    function updateBadge() {
+      const badge = document.getElementById('po-badge');
+      if (newPoCount > 0) {
+        badge.textContent = newPoCount > 99 ? '99+' : newPoCount;
+        badge.classList.add('show');
+      } else {
+        badge.classList.remove('show');
+      }
+    }
+
+    // Save functions
+    function saveSalesToFirebase() {
+      const salesObj = {};
+      sales.forEach(s => {
+        salesObj[s.id] = s;
+      });
+      database.ref('sales').set(salesObj);
+    }
+
+    function savePreordersToFirebase() {
+      const preordersObj = {};
+      preorders.forEach(p => {
+        preordersObj[p.id] = p;
+      });
+      database.ref('preorders').set(preordersObj);
+    }
+
+    // ====================== POS ======================
+    function renderMenu() {
+      document.getElementById('menu-grid').innerHTML = ITEMS.map(item => `
+        <div class="item-card">
+          <div class="item-name">${item.name}</div>
+          <span class="price-badge ${item.tier === 'plain' ? 'badge-plain' : 'badge-special'}">${item.tier}</span>
+          <div class="item-price">${fmt(item.price)}</div>
+          <div class="qty-row">
+            <button class="qty-btn minus" onclick="change('${item.id}', -1)">−</button>
+            <span class="qty-val" id="qty-${item.id}">0</span>
+            <button class="qty-btn plus" onclick="change('${item.id}', 1)">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleAllFree() {
+      isAllFree = !isAllFree;
+      const btn = document.getElementById('free-all-btn');
+      btn.classList.toggle('active', isAllFree);
+      btn.textContent = isAllFree ? "🎟️ All Items Marked Free" : "🎟️ Mark All Items as Free";
+      renderOrder();
+    }
+
+    function change(id, delta) {
+      order[id] = Math.max(0, (order[id] || 0) + delta);
+      document.getElementById(`qty-${id}`).textContent = order[id];
+      renderOrder();
+    }
+
+    function orderTotal() {
+      return ITEMS.reduce((sum, i) => sum + (order[i.id] || 0) * (isAllFree ? 0 : i.price), 0);
+    }
+
+    function renderOrder() {
+      const lines = ITEMS.filter(i => (order[i.id] || 0) > 0);
+      const ol = document.getElementById('order-lines');
+      const btn = document.getElementById('checkout-btn');
+
+      if (!lines.length) {
+        ol.innerHTML = '<p style="text-align:center; color:#888; padding:40px 0;">No items yet</p>';
+        btn.disabled = true;
+      } else {
+        ol.innerHTML = lines.map(i => `
+          <div class="order-line">
+            <span>${i.name} ×${order[i.id]}${isAllFree ? ' <span style="color:var(--free);font-size:13px;">(Free)</span>' : ''}</span>
+            <span>${fmt(isAllFree ? 0 : i.price * order[i.id])}</span>
+          </div>
+        `).join('');
+        btn.disabled = false;
+      }
+      document.getElementById('order-total').textContent = fmt(orderTotal());
+    }
+
+    function checkout() {
+      const lines = ITEMS.filter(i => (order[i.id] || 0) > 0);
+      if (!lines.length) return;
+
+      const btn = document.getElementById('checkout-btn');
+      btn.classList.add('success');
+      setTimeout(() => btn.classList.remove('success'), 800);
+
+      const items = lines.map(i => ({
+        id: i.id,
+        name: i.name,
+        price: isAllFree ? 0 : i.price,
+        qty: order[i.id],
+        free: isAllFree
+      }));
+      
+      recordSale(items, orderTotal(), "Walk-in");
+
+      order = {};
+      isAllFree = false;
+      document.getElementById('free-all-btn').classList.remove('active');
+      document.getElementById('free-all-btn').textContent = "🎟️ Mark All Items as Free";
+      ITEMS.forEach(i => {
+        const el = document.getElementById(`qty-${i.id}`);
+        if (el) el.textContent = 0;
+      });
+      renderOrder();
+    }
+
+    function recordSale(items, total, label = "", preorderId = null, isPrepaid = false) {
+      const nextId = sales.length > 0 ? Math.max(...sales.map(s => s.id)) + 1 : 1;
+      
+      const summary = items.map(i => `${i.name} x${i.qty}${i.free ? ' (Free)' : ''}`).join(', ');
+      
+      const newSale = {
+        id: nextId,
+        time: timeNow(),
+        summary,
+        total: isPrepaid ? 0 : total,
+        label,
+        items,
+        preorderId,
+        isPrepaid,
+        deviceId
+      };
+      
+      sales.push(newSale);
+      saveSalesToFirebase();
+      
+      if (!isPrepaid) {
+        items.forEach(i => flavourTotals[i.id] = (flavourTotals[i.id] || 0) + i.qty);
+      }
+    }
+
+    function deleteSale(id) {
+      const sale = sales.find(s => s.id === id);
+      if (!sale) return;
+      
+      if (sale.preorderId) {
+        const po = preorders.find(p => p.id === sale.preorderId);
+        if (po) {
+          po.collected = false;
+          savePreordersToFirebase();
+        }
+      }
+      
+      sales = sales.filter(s => s.id !== id);
+      saveSalesToFirebase();
+    }
+
+    function renderSalesList() {
+      const sl = document.getElementById('sales-list');
+      if (!sales.length) {
+        sl.innerHTML = '<p style="text-align:center; color:#888; padding:40px 0;">No sales yet today</p>';
+        document.getElementById('day-total').textContent = '$0.00';
+        return;
+      }
+      sl.innerHTML = [...sales].reverse().map(s => `
+        <div style="padding:14px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+          <div style="flex:1;">
+            <div style="font-size:12.5px; color:#888;">#${s.id} ${s.label ? '· ' + s.label : ''} • ${s.time}</div>
+            <div style="color:#555;">${s.summary}</div>
+            <div style="font-weight:700; color:${s.isPrepaid ? '#64748B' : 'var(--primary)'}; margin-top:6px;">
+              ${s.isPrepaid ? '(Prepaid)' : fmt(s.total)}
+            </div>
+          </div>
+          <button onclick="deleteSale(${s.id})" style="padding:6px 10px; background:#FFF1F1; color:var(--danger); border:1px solid #F5B8B8; border-radius:8px; cursor:pointer;">✕</button>
+        </div>
+      `).join('');
+      const dayTotal = sales.reduce((a, s) => a + (s.total || 0), 0);
+      document.getElementById('day-total').textContent = fmt(dayTotal);
+    }
+
+    // ====================== PRE-ORDERS ======================
+    function renderPoItemGrid() {
+      document.getElementById('po-item-grid').innerHTML = ITEMS.map(item => `
+        <div style="background:#F8F7F2; border-radius:14px; padding:14px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:500;">${item.name}</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="qty-btn minus" style="width:38px;height:38px;font-size:20px;" onclick="poChange('${item.id}',-1)">−</button>
+            <span class="qty-val" id="po-qty-${item.id}" style="font-size:1.3rem;">0</span>
+            <button class="qty-btn plus" style="width:38px;height:38px;font-size:20px;" onclick="poChange('${item.id}',1)">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function poChange(id, delta) {
+      poOrder[id] = Math.max(0, (poOrder[id] || 0) + delta);
+      document.getElementById(`po-qty-${id}`).textContent = poOrder[id];
+      updatePoPreview();
+    }
+
+    function updatePoPreview() {
+      const total = ITEMS.reduce((s, i) => s + (poOrder[i.id] || 0) * i.price, 0);
+      document.getElementById('po-preview-total').textContent = fmt(total);
+    }
+
+    function savePreorder() {
+      const name = document.getElementById('po-name').value.trim();
+      if (!name) return alert('Please enter a customer name.');
+
+      const items = ITEMS.filter(i => (poOrder[i.id] || 0) > 0)
+                         .map(i => ({id:i.id, name:i.name, price:i.price, qty:poOrder[i.id]}));
+
+      if (!items.length) return alert('Please add at least one item.');
+
+      const isPrepaid = document.getElementById('po-prepaid').checked;
+      const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+
+      if (editingPoId) {
+        const po = preorders.find(p => p.id === editingPoId);
+        if (po) {
+          po.name = name;
+          po.items = items;
+          po.total = total;
+          po.isPrepaid = isPrepaid;
+        }
+      } else {
+        const nextId = preorders.length > 0 ? Math.max(...preorders.map(p => p.id)) + 1 : 1;
+        preorders.push({
+          id: nextId,
+          name,
+          items,
+          total,
+          collected: false,
+          isPrepaid,
+          priority: false,
+          deviceId
+        });
+      }
+
+      savePreordersToFirebase();
+      resetPoForm();
+    }
+
+    function resetPoForm() {
+      document.getElementById('po-name').value = '';
+      document.getElementById('po-id').value = '';
+      document.getElementById('po-prepaid').checked = false;
+      editingPoId = null;
+      document.getElementById('save-po-btn').textContent = 'Save Pre-order';
+      poOrder = {};
+      ITEMS.forEach(i => {
+        const el = document.getElementById(`po-qty-${i.id}`);
+        if (el) el.textContent = 0;
+      });
+      updatePoPreview();
+    }
+
+    function editPreorder(id) {
+      const po = preorders.find(p => p.id === id);
+      if (!po || po.collected) return;
+
+      editingPoId = id;
+      document.getElementById('po-name').value = po.name;
+      document.getElementById('po-prepaid').checked = !!po.isPrepaid;
+      document.getElementById('save-po-btn').textContent = 'Update Pre-order';
+
+      poOrder = {};
+      po.items.forEach(item => poOrder[item.id] = item.qty);
+
+      ITEMS.forEach(i => {
+        const el = document.getElementById(`po-qty-${i.id}`);
+        if (el) el.textContent = poOrder[i.id] || 0;
+      });
+
+      updatePoPreview();
+      renderPoList();
+      switchTab('preorders', document.querySelectorAll('.tab')[1]);
+    }
+
+    function togglePriority(id) {
+      const po = preorders.find(p => p.id === id);
+      if (po) {
+        po.priority = !po.priority;
+        savePreordersToFirebase();
+      }
+    }
+
+    function collectPreorder(id) {
+      const po = preorders.find(p => p.id === id);
+      if (!po || po.collected) return;
+      
+      po.collected = true;
+      savePreordersToFirebase();
+      
+      recordSale(po.items, po.total, po.isPrepaid ? "Prepaid Money" : po.name, po.id, po.isPrepaid);
+    }
+
+    function deletePreorder(id) {
+      preorders = preorders.filter(p => p.id !== id);
+      savePreordersToFirebase();
+    }
+
+    function renderPoList() {
+      const searchTerm = (document.getElementById('po-search')?.value || '').toLowerCase().trim();
+
+      let pending = preorders.filter(p => !p.collected && p.id !== editingPoId);
+
+      if (searchTerm) {
+        pending = pending.filter(p => p.name.toLowerCase().includes(searchTerm));
+      }
+
+      pending.sort((a, b) => {
+        if (a.priority && !b.priority) return -1;
+        if (!a.priority && b.priority) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      const el = document.getElementById('po-list');
+
+      if (!pending.length) {
+        el.innerHTML = searchTerm 
+          ? '<p style="text-align:center; color:#888; padding:40px 0;">No matching pre-orders</p>'
+          : '<p style="text-align:center; color:#888; padding:60px 0;">No pending pre-orders</p>';
+        return;
+      }
+
+      el.innerHTML = pending.map(po => `
+        <div style="background:white; border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <strong style="font-size:1.1rem;">${po.name}</strong>
+              <span onclick="togglePriority(${po.id})" class="priority-star ${po.priority ? 'active' : ''}">★</span>
+            </div>
+            ${po.isPrepaid ? '<span style="background:#DBEAFE;color:#1E40AF;padding:4px 12px;border-radius:30px;font-size:12px;">Prepaid</span>' : '<span style="background:#FEF3C7;color:#92400E;padding:4px 12px;border-radius:30px;font-size:12px;">Pending</span>'}
+          </div>
+          <div style="color:#666; margin-bottom:12px;">${po.items.map(i => `${i.name} ×${i.qty}`).join(', ')}</div>
+          <div style="font-size:1.3rem; font-weight:700; color:var(--primary); margin-bottom:16px;">${fmt(po.total)}</div>
+          <div style="display:flex; gap:10px;">
+            <button onclick="editPreorder(${po.id})" style="flex:1;padding:12px;background:#64748B;color:white;border:none;border-radius:12px;cursor:pointer;">Edit</button>
+            <button onclick="collectPreorder(${po.id})" class="po-collect-btn" style="flex:1;">✓ Collect</button>
+            <button onclick="deletePreorder(${po.id})" class="po-delete-btn">✕</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ====================== CSV IMPORT ======================
+    function importCSV(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const csv = e.target.result;
+        const lines = csv.trim().split('\n');
+        if (lines.length < 2) {
+          alert("CSV file is empty or invalid.");
+          return;
+        }
+
+        const headers = lines[0].split(',').map(h => h.trim());
+        const nameIndex = headers.findIndex(h => h.toLowerCase().includes('customer') || h.toLowerCase().includes('name'));
+
+        if (nameIndex === -1) {
+          alert("CSV must have a column with 'Customer Name' or similar.");
+          return;
+        }
+
+        let added = 0;
+        const nextId = preorders.length > 0 ? Math.max(...preorders.map(p => p.id)) + 1 : 1;
+
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',').map(v => v.trim());
+          if (!values[nameIndex]) continue;
+
+          const customerName = values[nameIndex];
+          const items = [];
+          let total = 0;
+
+          ITEMS.forEach((item, idx) => {
+            const colIndex = headers.findIndex(h => h.toLowerCase().includes(item.name.toLowerCase().replace(/ /g,'')));
+            if (colIndex !== -1) {
+              const qty = parseInt(values[colIndex]) || 0;
+              if (qty > 0) {
+                items.push({id: item.id, name: item.name, price: item.price, qty});
+                total += item.price * qty;
+              }
+            }
+          });
+
+          if (items.length > 0) {
+            preorders.push({
+              id: nextId + added,
+              name: customerName,
+              items,
+              total,
+              collected: false,
+              isPrepaid: false,
+              priority: false,
+              deviceId
+            });
+            added++;
+          }
+        }
+
+        savePreordersToFirebase();
+        alert(`Successfully imported ${added} pre-order(s) from CSV!`);
+        input.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function renderToBake() {
+      const toBake = {};
+      const customers = {};
+
+      ITEMS.forEach(i => {
+        toBake[i.id] = 0;
+        customers[i.id] = [];
+      });
+
+      preorders.filter(p => !p.collected).forEach(po => {
+        po.items.forEach(item => {
+          toBake[item.id] += item.qty;
+          customers[item.id].push(po.name);
+        });
+      });
+
+      let html = '<h3 style="margin-bottom:16px; color:#92400E;">Needed Today</h3>';
+
+      ITEMS.forEach(item => {
+        if (toBake[item.id] > 0) {
+          html += `
+            <div style="padding:10px 0; border-bottom:1px solid #f5e8c7;">
+              <div style="display:flex; justify-content:space-between; font-weight:600;">
+                <span>${item.name}</span>
+                <span style="color:#92400E;">${toBake[item.id]}</span>
+              </div>
+              <div style="margin-top:4px;">
+                ${customers[item.id].map(name => `<span class="customer-name">${name}</span>`).join(', ')}
+              </div>
+            </div>`;
+        }
+      });
+
+      if (Object.values(toBake).every(q => q === 0)) {
+        html += '<p style="color:#888;text-align:center;padding:30px 0;">No pre-orders pending</p>';
+      }
+
+      document.getElementById('to-bake-list').innerHTML = html;
+    }
+
+    // Summary
+    function renderInvoice() {
+      const box = document.getElementById('invoice-box');
+      if (!box) return;
+      
+      const totalEarned = sales.reduce((a, s) => a + (s.total || 0), 0);
+      const totalSold = ITEMS.reduce((s, i) => s + (flavourTotals[i.id] || 0), 0);
+      const txns = sales.length;
+
+      if (!txns) {
+        box.innerHTML = `<p style="text-align:center; color:#888; font-size:1.1rem; padding:80px 0;">No sales recorded yet today.</p>`;
+        return;
+      }
+
+      const invNo = 'INV-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(txns).padStart(3,'0');
+
+      let flavourRows = '';
+      ITEMS.forEach(i => {
+        const qty = flavourTotals[i.id] || 0;
+        const earned = qty * i.price;
+        flavourRows += `
+          <tr style="border-bottom:1px solid #eee;">
+            <td style="padding:12px 0;">${i.name}</td>
+            <td style="padding:12px 0; text-align:right;">${fmt(i.price)}</td>
+            <td style="padding:12px 0; text-align:right;">${qty}</td>
+            <td style="padding:12px 0; text-align:right; font-weight:600;">${fmt(earned)}</td>
+          </tr>`;
+      });
+
+      let txRows = [...sales].reverse().map(s => `
+        <div style="display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid #eee;">
+          <div>
+            <div>#${s.id} ${s.label ? '— ' + s.label : ''}</div>
+            <div style="font-size:13px; color:#666;">${s.summary}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:700;">${fmt(s.total)}</div>
+            <div style="font-size:12px; color:#888;">${s.time}</div>
+          </div>
+        </div>
+      `).join('');
+
+      box.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:40px; padding-bottom:30px; border-bottom:3px solid #eee;">
+          <div>
+            <div style="font-size:2.4rem; font-weight:800; letter-spacing:-0.03em;">Kassav Vero co.</div>
+            <div style="color:#666; margin-top:4px;">Fresh baked daily</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:13px; color:#666;">Invoice</div>
+            <div style="font-size:1.3rem; font-weight:700;">${invNo}</div>
+            <div style="margin-top:12px;">
+              <div style="font-size:13px; color:#666;">Date</div>
+              <div style="font-weight:600;">${today()}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-bottom:40px;">
+          <div style="background:#F8F7F2; padding:20px; border-radius:16px; text-align:center;">
+            <div style="font-size:2rem; font-weight:700;">${txns}</div>
+            <div style="color:#666;">Transactions</div>
+          </div>
+          <div style="background:#F8F7F2; padding:20px; border-radius:16px; text-align:center;">
+            <div style="font-size:2rem; font-weight:700;">${totalSold}</div>
+            <div style="color:#666;">Kassavas Sold</div>
+          </div>
+          <div style="background:#F8F7F2; padding:20px; border-radius:16px; text-align:center;">
+            <div style="font-size:2rem; font-weight:700;">${preorders.filter(p=>p.collected).length}</div>
+            <div style="color:#666;">Orders fullfilled</div>
+          </div>
+        </div>
+
+        <h3 style="margin:30px 0 16px; font-size:1.1rem; color:#555;">Flavour Breakdown</h3>
+        <table style="width:100%; border-collapse:collapse; margin-bottom:40px;">
+          <thead>
+            <tr style="border-bottom:2px solid #ddd;">
+              <th style="text-align:left; padding:10px 0; font-weight:600;">Flavour</th>
+              <th style="text-align:right; padding:10px 0; font-weight:600;">Price</th>
+              <th style="text-align:right; padding:10px 0; font-weight:600;">Qty</th>
+              <th style="text-align:right; padding:10px 0; font-weight:600;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>${flavourRows}</tbody>
+        </table>
+
+        <div style="border-top:3px solid #ddd; padding-top:24px; font-size:1.4rem; font-weight:700; display:flex; justify-content:space-between;">
+          <span>Total Earned</span>
+          <span style="color:var(--primary);">${fmt(totalEarned)}</span>
+        </div>
+
+        <h3 style="margin:40px 0 16px; font-size:1.1rem; color:#555;">Transaction Log</h3>
+        <div>${txRows}</div>
+
+        <div style="text-align:center; margin-top:60px; color:#888; font-size:14px;">
+          Thank you for supporting Kassav Vero. ❤️
+        </div>
+      `;
+    }
+
+    function clearSales() {
+      if (!confirm('Clear all sales and reset the day?')) return;
+      
+      database.ref('sales').set(null);
+      database.ref('preorders').set(null);
+      
+      sales = [];
+      preorders = [];
+      txCount = 0;
+      poCount = 0;
+      newPoCount = 0;
+      lastKnownPoIds = new Set();
+      updateBadge();
+      ITEMS.forEach(i => flavourTotals[i.id] = 0);
+      
+      renderSalesList();
+      renderPoList();
+      renderToBake();
+    }
+
+    function switchTab(id, el) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('page-' + id).classList.add('active');
+      el.classList.add('active');
+      
+      // Clear notification badge when switching to preorders tab
+      if (id === 'preorders') {
+        newPoCount = 0;
+        updateBadge();
+      }
+      
+      if (id === 'summary') renderInvoice();
+      if (id === 'preorders') renderToBake();
+    }
+
+    // Initialize
+    renderMenu();
+    renderPoItemGrid();
+    renderSalesList();
+    renderPoList();
+    renderToBake();
+    checkNotificationSupport();
+  </script>
+</body>
+</html>
