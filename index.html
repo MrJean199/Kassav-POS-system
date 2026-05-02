@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#1D9E75">
   <title>Kassav Vero. • POS</title>
   
   <!-- Firebase SDKs -->
@@ -22,6 +25,7 @@
       --success: #1D9E75;
       --danger: #E24B4A;
       --free: #8B5CF6;
+      --touch-target: 44px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,51 +34,56 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
-      padding: 20px;
+      padding: 16px;
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
     }
 
     .container { max-width: 1400px; margin: 0 auto; }
 
-    .header { text-align: center; margin-bottom: 24px; }
-    .header h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.02em; }
-    .header p { color: var(--text-light); font-size: 1.05rem; }
+    .header { text-align: center; margin-bottom: 20px; }
+    .header h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 700; letter-spacing: -0.02em; }
+    .header p { color: var(--text-light); font-size: clamp(0.9rem, 2vw, 1.05rem); }
 
     .tabs {
-      display: flex; gap: 12px; margin-bottom: 24px; background: white;
-      padding: 8px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-      width: fit-content; margin: 0 auto; position: relative;
+      display: flex; gap: 6px; margin-bottom: 20px; background: white;
+      padding: 6px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      width: 100%; max-width: 500px; margin-left: auto; margin-right: auto;
+      position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch;
     }
     .tab {
-      padding: 14px 28px; border: none; border-radius: 12px; background: transparent;
-      font-size: 15px; font-weight: 600; color: var(--text-light); cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
+      padding: 12px 16px; border: none; border-radius: 10px; background: transparent;
+      font-size: clamp(13px, 2.5vw, 15px); font-weight: 600; color: var(--text-light);
+      cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative; white-space: nowrap; flex-shrink: 0;
+      min-height: var(--touch-target); display: flex; align-items: center;
     }
-    .tab:hover { background: #f5f3eb; transform: translateY(-1px); }
+    .tab:hover { background: #f5f3eb; }
+    .tab:active { transform: scale(0.96); }
     .tab.active {
       background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(29,158,117,0.35);
     }
 
-    /* Notification badge */
     .notification-badge {
       position: absolute;
-      top: -6px;
-      right: -6px;
+      top: 2px;
+      right: 2px;
       background: #E24B4A;
       color: white;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
       display: none;
       align-items: center;
       justify-content: center;
+      padding: 0 4px;
       box-shadow: 0 2px 6px rgba(226,75,74,0.4);
       animation: badgePop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .notification-badge.show {
-      display: flex;
-    }
+    .notification-badge.show { display: flex; }
 
     @keyframes badgePop {
       0% { transform: scale(0); }
@@ -83,147 +92,175 @@
     }
 
     .page { display: none; }
-    .page.active { display: block; }
+    .page.active { display: block; animation: fadeIn 0.3s ease; }
 
-    .pos-wrap { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .pos-wrap { 
+      display: grid; 
+      grid-template-columns: 1fr 380px; 
+      gap: 20px;
+      align-items: start;
+    }
 
     .menu-section, .panel {
-      background: white; border-radius: 20px; padding: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+      background: white; border-radius: 18px; padding: 20px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.05);
     }
 
     .section-title {
-      font-size: 1.1rem; font-weight: 600; color: var(--text-light);
-      margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+      font-size: clamp(0.85rem, 2vw, 1.1rem); font-weight: 600; color: var(--text-light);
+      margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;
+      display: flex; justify-content: space-between; align-items: center;
     }
 
     .menu-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+      gap: 12px;
     }
 
     .item-card {
-      background: white; border: 1px solid var(--border); border-radius: 18px;
-      padding: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: white; border: 1px solid var(--border); border-radius: 16px;
+      padding: clamp(14px, 2vw, 20px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
     }
-    .item-card:hover { transform: translateY(-6px); box-shadow: 0 15px 30px rgba(0,0,0,0.12); border-color: var(--primary); }
+    .item-card:active { transform: scale(0.97); }
 
-    .item-name { font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; }
-    .price-badge { display: inline-block; font-size: 12px; padding: 4px 12px; border-radius: 30px; font-weight: 600; margin-bottom: 12px; }
+    .item-name { font-size: clamp(1.1rem, 2.5vw, 1.35rem); font-weight: 700; margin-bottom: 6px; }
+    .price-badge { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; margin-bottom: 10px; }
     .badge-plain { background: #EDE9E0; color: #5C5544; }
     .badge-special { background: #FEF3C7; color: #92400E; }
 
-    .item-price { font-size: 2.1rem; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
+    .item-price { font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 700; color: var(--primary); margin-bottom: 12px; }
 
     .qty-row {
       display: flex; align-items: center; justify-content: space-between;
-      background: #F8F7F2; border-radius: 14px; padding: 8px;
+      background: #F8F7F2; border-radius: 12px; padding: 6px; gap: 8px;
     }
     .qty-btn {
-      width: 52px; height: 52px; border: none; border-radius: 12px; font-size: 26px;
+      width: clamp(44px, 8vw, 52px); height: clamp(44px, 8vw, 52px);
+      border: none; border-radius: 10px; font-size: clamp(22px, 4vw, 26px);
       display: flex; align-items: center; justify-content: center; cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s; flex-shrink: 0; user-select: none;
+      -webkit-user-select: none;
     }
     .qty-btn.minus { background: #FFF1F1; color: var(--danger); }
     .qty-btn.plus { background: #E6F7F0; color: var(--primary); }
-    .qty-btn:hover { transform: scale(1.12); }
+    .qty-btn:active { transform: scale(0.9); }
+
+    .qty-val {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      font-weight: 700;
+      min-width: 24px;
+      text-align: center;
+    }
 
     .free-btn {
-      width: 100%; margin-top: 12px; padding: 12px; border-radius: 12px;
+      width: 100%; margin-top: 12px; padding: clamp(12px, 2vw, 14px); border-radius: 12px;
       background: #F3E8FF; color: var(--free); border: 1px solid #C4B5FD;
       font-weight: 600; cursor: pointer; transition: all 0.2s;
+      min-height: var(--touch-target); font-size: clamp(13px, 2vw, 14px);
     }
+    .free-btn:active { transform: scale(0.97); }
     .free-btn.active {
       background: var(--free); color: white; border-color: var(--free);
     }
 
-    .order-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .order-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: clamp(13px, 2vw, 15px); }
     .order-total {
-      font-size: 1.4rem; font-weight: 700; padding-top: 16px; margin-top: 12px;
+      font-size: clamp(1.1rem, 2.5vw, 1.4rem); font-weight: 700; padding-top: 14px; margin-top: 10px;
       border-top: 2px solid var(--border); display: flex; justify-content: space-between; color: var(--primary);
     }
 
     .checkout-btn {
-      width: 100%; padding: 18px; font-size: 1.2rem; font-weight: 700;
-      background: var(--primary); color: white; border: none; border-radius: 16px;
-      cursor: pointer; margin-top: 12px; transition: all 0.25s;
+      width: 100%; padding: clamp(14px, 2vw, 18px); font-size: clamp(1rem, 2.5vw, 1.2rem); font-weight: 700;
+      background: var(--primary); color: white; border: none; border-radius: 14px;
+      cursor: pointer; margin-top: 10px; transition: all 0.25s;
       box-shadow: 0 6px 20px rgba(29,158,117,0.35);
+      min-height: var(--touch-target);
     }
-    .checkout-btn:hover { background: var(--primary-dark); transform: translateY(-3px); }
+    .checkout-btn:active { transform: scale(0.97); background: var(--primary-dark); }
 
-    .clear-btn { font-size: 13px; color: var(--danger); background: none; border: none; cursor: pointer; text-decoration: underline; }
+    .clear-btn { font-size: 13px; color: var(--danger); background: none; border: none; cursor: pointer; text-decoration: underline; min-height: var(--touch-target); }
 
     .search-box {
-      width: 100%; padding: 14px 16px; border: 1px solid var(--border);
-      border-radius: 12px; font-size: 15px; margin-bottom: 16px;
+      width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+      border-radius: 10px; font-size: 15px; margin-bottom: 14px;
+      -webkit-appearance: none;
     }
+    .search-box:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(29,158,117,0.1); }
 
     .priority-star {
-      cursor: pointer; font-size: 1.4rem; color: #ccc; transition: color 0.2s;
+      cursor: pointer; font-size: 1.3rem; color: #ccc; transition: color 0.2s;
+      min-width: var(--touch-target); min-height: var(--touch-target);
+      display: inline-flex; align-items: center; justify-content: center;
     }
     .priority-star.active { color: #F59E0B; }
 
     .to-bake {
-      background: #FEF3C7; border-radius: 16px; padding: 20px; margin: 20px 0;
+      background: #FEF3C7; border-radius: 14px; padding: 16px; margin: 16px 0;
     }
-    .to-bake h3 { margin-bottom: 16px; color: #92400E; }
-    .customer-name { font-size: 12px; color: #92400E; opacity: 0.85; }
+    .to-bake h3 { margin-bottom: 14px; color: #92400E; font-size: clamp(0.9rem, 2vw, 1rem); }
+    .customer-name { font-size: 11px; color: #92400E; opacity: 0.85; display: inline-block; margin: 2px 4px; }
 
-    .prepaid-toggle { display: flex; align-items: center; gap: 8px; margin: 16px 0; font-weight: 600; color: #1E40AF; }
+    .prepaid-toggle { display: flex; align-items: center; gap: 8px; margin: 14px 0; font-weight: 600; color: #1E40AF; min-height: var(--touch-target); }
 
     .add-po-btn, .po-collect-btn {
-      width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 600;
-      border: none; border-radius: 14px; cursor: pointer; transition: all 0.25s;
+      width: 100%; padding: clamp(14px, 2vw, 16px); font-size: clamp(0.95rem, 2vw, 1.1rem); font-weight: 600;
+      border: none; border-radius: 12px; cursor: pointer; transition: all 0.25s;
+      min-height: var(--touch-target);
     }
     .add-po-btn { background: #185FA5; color: white; }
-    .add-po-btn:hover { background: #0d4070; transform: translateY(-2px); }
+    .add-po-btn:active { background: #0d4070; transform: scale(0.97); }
     .po-collect-btn { background: var(--primary); color: white; }
-    .po-collect-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+    .po-collect-btn:active { background: var(--primary-dark); transform: scale(0.97); }
     .po-delete-btn {
-      padding: 12px 20px; background: #FFF1F1; color: var(--danger);
-      border: 1px solid #F5B8B8; border-radius: 12px; cursor: pointer;
+      padding: 12px 18px; background: #FFF1F1; color: var(--danger);
+      border: 1px solid #F5B8B8; border-radius: 10px; cursor: pointer;
+      min-height: var(--touch-target); min-width: var(--touch-target);
     }
+    .po-delete-btn:active { background: #FEE2E2; }
 
-    /* Connection status */
     .connection-status {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 13px;
+      top: 12px;
+      right: 12px;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 11px;
       font-weight: 600;
       z-index: 1000;
+      pointer-events: none;
     }
-    .connection-status.online {
-      background: #D1FAE5;
-      color: #065F46;
-    }
-    .connection-status.offline {
-      background: #FEE2E2;
-      color: #991B1B;
-    }
+    .connection-status.online { background: #D1FAE5; color: #065F46; }
+    .connection-status.offline { background: #FEE2E2; color: #991B1B; }
 
-    /* Notification permission prompt */
     .notif-prompt {
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       background: white;
-      padding: 16px 24px;
-      border-radius: 16px;
+      padding: 14px 20px;
+      border-radius: 14px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.15);
       z-index: 1000;
       display: none;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       font-weight: 500;
       color: var(--text);
-      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 14px;
+      max-width: calc(100vw - 32px);
+      width: auto;
     }
-    .notif-prompt.show { display: flex; }
+    .notif-prompt.show { display: flex; animation: slideUp 0.3s ease; }
     .notif-prompt button {
-      padding: 8px 20px;
+      padding: 8px 18px;
       background: var(--primary);
       color: white;
       border: none;
@@ -231,20 +268,190 @@
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
+      min-height: 36px;
     }
-    .notif-prompt button:hover { background: var(--primary-dark); }
 
     @keyframes slideUp {
       from { transform: translateX(-50%) translateY(20px); opacity: 0; }
       to { transform: translateX(-50%) translateY(0); opacity: 1; }
     }
+
+    .table-wrap {
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      margin: 0 -8px; padding: 0 8px;
+    }
+
+    /* ============ MOBILE RESPONSIVE ============ */
+    @media (max-width: 900px) {
+      .pos-wrap {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        display: flex; flex-direction: column; gap: 14px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+        padding-bottom: env(safe-area-inset-bottom, 10px);
+      }
+
+      .header h1 { font-size: 1.4rem; }
+      .header p { font-size: 0.85rem; }
+
+      .tabs {
+        gap: 4px; padding: 4px; border-radius: 12px;
+        position: sticky; top: 10px; z-index: 100;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      .tab {
+        padding: 10px 12px; font-size: 12px; border-radius: 8px;
+        min-height: 38px;
+      }
+
+      .menu-section, .panel {
+        padding: 14px; border-radius: 14px;
+      }
+
+      .menu-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 8px;
+      }
+
+      .item-card {
+        padding: 12px; border-radius: 12px;
+      }
+
+      .item-price {
+        font-size: 1.3rem;
+      }
+
+      .qty-btn {
+        width: 40px; height: 40px; font-size: 20px; border-radius: 8px;
+      }
+
+      .qty-val {
+        font-size: 1rem;
+      }
+
+      .checkout-btn {
+        padding: 14px; font-size: 1rem; border-radius: 12px;
+      }
+
+      #page-preorders > div {
+        grid-template-columns: 1fr !important;
+        gap: 14px;
+      }
+
+      #invoice-box {
+        padding: 20px 16px !important;
+        border-radius: 14px !important;
+      }
+
+      #invoice-box table {
+        font-size: 13px;
+      }
+
+      #invoice-box h3 {
+        font-size: 0.95rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 8px;
+        padding-bottom: env(safe-area-inset-bottom, 8px);
+      }
+
+      .header {
+        margin-bottom: 12px;
+      }
+      .header h1 {
+        font-size: 1.2rem;
+      }
+      .header p {
+        font-size: 0.8rem;
+      }
+
+      .tabs {
+        gap: 2px;
+        top: 8px;
+      }
+      .tab {
+        padding: 8px 10px;
+        font-size: 11px;
+        min-height: 34px;
+      }
+
+      .menu-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+
+      .item-card {
+        padding: 10px;
+        border-radius: 10px;
+      }
+
+      .item-name {
+        font-size: 0.9rem;
+      }
+
+      .item-price {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+      }
+
+      .price-badge {
+        font-size: 10px;
+        padding: 2px 8px;
+      }
+
+      .qty-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+        border-radius: 8px;
+      }
+
+      .qty-val {
+        font-size: 0.9rem;
+      }
+
+      .free-btn {
+        font-size: 12px;
+        padding: 10px;
+      }
+
+      .checkout-btn {
+        font-size: 0.9rem;
+        padding: 12px;
+      }
+
+      .section-title {
+        font-size: 0.8rem;
+        margin-bottom: 10px;
+      }
+
+      .notif-prompt {
+        font-size: 12px;
+        padding: 10px 14px;
+        bottom: 10px;
+      }
+
+      .notif-prompt button {
+        font-size: 12px;
+        padding: 6px 14px;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- Connection indicator -->
   <div class="connection-status online" id="connection-status">🟢 Connected</div>
-
-  <!-- Notification permission prompt -->
   <div class="notif-prompt" id="notif-prompt">
     <span>🔔 Get notified of new orders</span>
     <button onclick="requestNotificationPermission()">Enable</button>
@@ -276,7 +483,7 @@
 
         <div class="sidebar">
           <div class="panel">
-            <div class="panel-title"><span>Current Order</span></div>
+            <div class="section-title">Current Order</div>
             <div id="order-lines"><p style="text-align:center; color:#888; padding:40px 0;">No items yet</p></div>
             <div class="order-total">
               <span>Total</span>
@@ -286,7 +493,7 @@
           </div>
 
           <div class="panel">
-            <div class="panel-title">
+            <div class="section-title">
               <span>Today's Sales</span>
               <button class="clear-btn" onclick="clearSales()">Clear Day</button>
             </div>
@@ -320,9 +527,9 @@
           <div class="section-title" style="margin:24px 0 16px;">Select Items</div>
           <div id="po-item-grid"></div>
 
-          <div style="margin:28px 0; display:flex; justify-content:space-between; align-items:center; font-size:1.15rem;">
+          <div style="margin:28px 0; display:flex; justify-content:space-between; align-items:center; font-size:clamp(1rem, 2vw, 1.15rem);">
             <span style="color:#666;">Order Total</span>
-            <span id="po-preview-total" style="font-weight:700; color:var(--primary); font-size:1.7rem;">$0.00</span>
+            <span id="po-preview-total" style="font-weight:700; color:var(--primary); font-size:clamp(1.3rem, 3vw, 1.7rem);">$0.00</span>
           </div>
 
           <button class="add-po-btn" id="save-po-btn" onclick="savePreorder()">Save Pre-order</button>
@@ -403,13 +610,11 @@
 
     // ====================== NOTIFICATION SYSTEM ======================
     
-    // Check if notifications are supported
     function checkNotificationSupport() {
       if ('Notification' in window && 'serviceWorker' in navigator) {
         if (Notification.permission === 'granted') {
           notificationEnabled = true;
         } else if (Notification.permission === 'default') {
-          // Show prompt after 3 seconds
           setTimeout(() => {
             document.getElementById('notif-prompt').classList.add('show');
           }, 3000);
@@ -417,24 +622,20 @@
       }
     }
 
-    // Request notification permission
     function requestNotificationPermission() {
       Notification.requestPermission().then(permission => {
         if (permission === 'granted') {
           notificationEnabled = true;
           document.getElementById('notif-prompt').classList.remove('show');
-          // Test notification
           showNotification('Kassav Vero.', '🔔 Notifications enabled! You\'ll be alerted of new orders.');
         }
       });
     }
 
-    // Show browser notification
     function showNotification(title, body) {
       if (!notificationEnabled) return;
       
       if ('Notification' in window && Notification.permission === 'granted') {
-        // Use service worker if available for persistent notifications
         if (navigator.serviceWorker && navigator.serviceWorker.controller) {
           navigator.serviceWorker.ready.then(registration => {
             registration.showNotification(title, {
@@ -442,13 +643,10 @@
               icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%231D9E75"/><text x="50" y="65" text-anchor="middle" fill="white" font-size="40" font-weight="bold">K</text></svg>',
               badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%231D9E75"/><text x="50" y="65" text-anchor="middle" fill="white" font-size="40" font-weight="bold">K</text></svg>',
               vibrate: [200, 100, 200],
-              tag: 'kassav-vero-notification',
-              requireInteraction: false,
-              silent: false
+              tag: 'kassav-vero-notification'
             });
           });
         } else {
-          // Fallback to regular notification
           new Notification(title, {
             body: body,
             icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%231D9E75"/></svg>'
@@ -459,20 +657,18 @@
 
     // ====================== FIREBASE SYNC ======================
     
-    // Connection monitoring
     const connectedRef = database.ref('.info/connected');
     connectedRef.on('value', (snap) => {
       const status = document.getElementById('connection-status');
       if (snap.val() === true) {
-        status.textContent = '🟢 Connected';
+        status.textContent = '🟢';
         status.className = 'connection-status online';
       } else {
-        status.textContent = '🔴 Disconnected';
+        status.textContent = '🔴';
         status.className = 'connection-status offline';
       }
     });
 
-    // Track device presence
     const presenceRef = database.ref('presence');
     presenceRef.child(deviceId).set({
       lastSeen: firebase.database.ServerValue.TIMESTAMP,
@@ -480,12 +676,13 @@
     });
     presenceRef.child(deviceId).onDisconnect().remove();
 
-    // Listen for sales changes
+    // Listen for sales changes - RECALCULATE flavourTotals FROM SCRATCH
     database.ref('sales').on('value', (snapshot) => {
       const data = snapshot.val();
       sales = data ? Object.values(data) : [];
       txCount = sales.length;
       
+      // Reset and recalculate - no double counting
       ITEMS.forEach(i => flavourTotals[i.id] = 0);
       sales.forEach(s => {
         if (s.items && !s.isPrepaid) {
@@ -499,24 +696,21 @@
       renderInvoice();
     });
 
-    // Listen for preorders changes with notification support
+    // Listen for preorders changes
     database.ref('preorders').on('value', (snapshot) => {
       const data = snapshot.val();
       const newPreorders = data ? Object.values(data) : [];
       
-      // Check for new pre-orders
       if (preorders.length > 0) {
         const currentIds = new Set(newPreorders.map(p => p.id));
         
         newPreorders.forEach(po => {
-          // New pre-order added
           if (!lastKnownPoIds.has(po.id) && lastKnownPoIds.size > 0) {
             newPoCount++;
             updateBadge();
             showNotification('📋 New Order!', `${po.name} placed an order for ${po.items.map(i => i.name + ' ×' + i.qty).join(', ')}`);
           }
           
-          // Pre-order collected
           if (po.collected && lastKnownPoIds.has(po.id)) {
             const oldPo = preorders.find(p => p.id === po.id);
             if (oldPo && !oldPo.collected) {
@@ -527,7 +721,6 @@
         
         lastKnownPoIds = currentIds;
       } else {
-        // First load - populate the set
         lastKnownPoIds = new Set(newPreorders.map(p => p.id));
       }
       
@@ -539,7 +732,6 @@
       renderInvoice();
     });
 
-    // Update notification badge
     function updateBadge() {
       const badge = document.getElementById('po-badge');
       if (newPoCount > 0) {
@@ -550,7 +742,6 @@
       }
     }
 
-    // Save functions
     function saveSalesToFirebase() {
       const salesObj = {};
       sales.forEach(s => {
@@ -575,9 +766,9 @@
           <span class="price-badge ${item.tier === 'plain' ? 'badge-plain' : 'badge-special'}">${item.tier}</span>
           <div class="item-price">${fmt(item.price)}</div>
           <div class="qty-row">
-            <button class="qty-btn minus" onclick="change('${item.id}', -1)">−</button>
+            <button class="qty-btn minus" onclick="change('${item.id}', -1)" aria-label="Decrease ${item.name}">−</button>
             <span class="qty-val" id="qty-${item.id}">0</span>
-            <button class="qty-btn plus" onclick="change('${item.id}', 1)">+</button>
+            <button class="qty-btn plus" onclick="change('${item.id}', 1)" aria-label="Increase ${item.name}">+</button>
           </div>
         </div>
       `).join('');
@@ -626,8 +817,8 @@
       if (!lines.length) return;
 
       const btn = document.getElementById('checkout-btn');
-      btn.classList.add('success');
-      setTimeout(() => btn.classList.remove('success'), 800);
+      btn.style.background = 'var(--primary-dark)';
+      setTimeout(() => btn.style.background = '', 600);
 
       const items = lines.map(i => ({
         id: i.id,
@@ -669,10 +860,7 @@
       
       sales.push(newSale);
       saveSalesToFirebase();
-      
-      if (!isPrepaid) {
-        items.forEach(i => flavourTotals[i.id] = (flavourTotals[i.id] || 0) + i.qty);
-      }
+      // REMOVED: manual flavourTotals update - Firebase listener handles it
     }
 
     function deleteSale(id) {
@@ -698,18 +886,28 @@
         document.getElementById('day-total').textContent = '$0.00';
         return;
       }
-      sl.innerHTML = [...sales].reverse().map(s => `
+      sl.innerHTML = [...sales].reverse().map(s => {
+        let labelText = s.label || '';
+        if (s.isPrepaid && s.preorderId) {
+          const po = preorders.find(p => p.id === s.preorderId);
+          if (po) {
+            labelText = po.name + ' · Prepaid';
+          }
+        }
+        if (!labelText) labelText = s.label || 'Walk-in';
+        
+        return `
         <div style="padding:14px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-          <div style="flex:1;">
-            <div style="font-size:12.5px; color:#888;">#${s.id} ${s.label ? '· ' + s.label : ''} • ${s.time}</div>
-            <div style="color:#555;">${s.summary}</div>
+          <div style="flex:1; min-width:0; padding-right:8px;">
+            <div style="font-size:12px; color:#888;">#${s.id} · ${labelText} • ${s.time}</div>
+            <div style="color:#555; font-size:clamp(12px,2vw,14px); word-break:break-word;">${s.summary}</div>
             <div style="font-weight:700; color:${s.isPrepaid ? '#64748B' : 'var(--primary)'}; margin-top:6px;">
               ${s.isPrepaid ? '(Prepaid)' : fmt(s.total)}
             </div>
           </div>
-          <button onclick="deleteSale(${s.id})" style="padding:6px 10px; background:#FFF1F1; color:var(--danger); border:1px solid #F5B8B8; border-radius:8px; cursor:pointer;">✕</button>
+          <button onclick="deleteSale(${s.id})" style="padding:6px 10px; background:#FFF1F1; color:var(--danger); border:1px solid #F5B8B8; border-radius:8px; cursor:pointer; min-width:36px; min-height:36px; flex-shrink:0;" aria-label="Delete sale">✕</button>
         </div>
-      `).join('');
+      `}).join('');
       const dayTotal = sales.reduce((a, s) => a + (s.total || 0), 0);
       document.getElementById('day-total').textContent = fmt(dayTotal);
     }
@@ -718,10 +916,10 @@
     function renderPoItemGrid() {
       document.getElementById('po-item-grid').innerHTML = ITEMS.map(item => `
         <div style="background:#F8F7F2; border-radius:14px; padding:14px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-weight:500;">${item.name}</span>
+          <span style="font-weight:500; font-size:clamp(13px,2vw,15px);">${item.name}</span>
           <div style="display:flex; align-items:center; gap:8px;">
             <button class="qty-btn minus" style="width:38px;height:38px;font-size:20px;" onclick="poChange('${item.id}',-1)">−</button>
-            <span class="qty-val" id="po-qty-${item.id}" style="font-size:1.3rem;">0</span>
+            <span class="qty-val" id="po-qty-${item.id}" style="font-size:1.1rem;">0</span>
             <button class="qty-btn plus" style="width:38px;height:38px;font-size:20px;" onclick="poChange('${item.id}',1)">+</button>
           </div>
         </div>
@@ -828,7 +1026,7 @@
       po.collected = true;
       savePreordersToFirebase();
       
-      recordSale(po.items, po.total, po.isPrepaid ? "Prepaid Money" : po.name, po.id, po.isPrepaid);
+      recordSale(po.items, po.total, po.name, po.id, po.isPrepaid);
     }
 
     function deletePreorder(id) {
@@ -861,20 +1059,20 @@
       }
 
       el.innerHTML = pending.map(po => `
-        <div style="background:white; border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <strong style="font-size:1.1rem;">${po.name}</strong>
+        <div style="background:white; border:1px solid var(--border); border-radius:16px; padding:clamp(14px,2vw,20px); margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <strong style="font-size:clamp(0.95rem,2vw,1.1rem);">${po.name}</strong>
               <span onclick="togglePriority(${po.id})" class="priority-star ${po.priority ? 'active' : ''}">★</span>
             </div>
-            ${po.isPrepaid ? '<span style="background:#DBEAFE;color:#1E40AF;padding:4px 12px;border-radius:30px;font-size:12px;">Prepaid</span>' : '<span style="background:#FEF3C7;color:#92400E;padding:4px 12px;border-radius:30px;font-size:12px;">Pending</span>'}
+            ${po.isPrepaid ? '<span style="background:#DBEAFE;color:#1E40AF;padding:3px 10px;border-radius:20px;font-size:11px;">Prepaid</span>' : '<span style="background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:20px;font-size:11px;">Pending</span>'}
           </div>
-          <div style="color:#666; margin-bottom:12px;">${po.items.map(i => `${i.name} ×${i.qty}`).join(', ')}</div>
-          <div style="font-size:1.3rem; font-weight:700; color:var(--primary); margin-bottom:16px;">${fmt(po.total)}</div>
-          <div style="display:flex; gap:10px;">
-            <button onclick="editPreorder(${po.id})" style="flex:1;padding:12px;background:#64748B;color:white;border:none;border-radius:12px;cursor:pointer;">Edit</button>
-            <button onclick="collectPreorder(${po.id})" class="po-collect-btn" style="flex:1;">✓ Collect</button>
-            <button onclick="deletePreorder(${po.id})" class="po-delete-btn">✕</button>
+          <div style="color:#666; margin-bottom:10px; font-size:clamp(12px,2vw,14px);">${po.items.map(i => `${i.name} ×${i.qty}`).join(', ')}</div>
+          <div style="font-size:clamp(1.1rem,2.5vw,1.3rem); font-weight:700; color:var(--primary); margin-bottom:14px;">${fmt(po.total)}</div>
+          <div style="display:flex; gap:8px;">
+            <button onclick="editPreorder(${po.id})" style="flex:1;padding:12px;background:#64748B;color:white;border:none;border-radius:10px;cursor:pointer;font-size:clamp(12px,2vw,14px);min-height:40px;">Edit</button>
+            <button onclick="collectPreorder(${po.id})" class="po-collect-btn" style="flex:1;font-size:clamp(12px,2vw,14px);min-height:40px;">✓ Collect</button>
+            <button onclick="deletePreorder(${po.id})" class="po-delete-btn" style="min-height:40px;">✕</button>
           </div>
         </div>
       `).join('');
@@ -962,13 +1160,13 @@
         });
       });
 
-      let html = '<h3 style="margin-bottom:16px; color:#92400E;">Needed Today</h3>';
+      let html = '<h3 style="margin-bottom:14px; color:#92400E;">Needed Today</h3>';
 
       ITEMS.forEach(item => {
         if (toBake[item.id] > 0) {
           html += `
             <div style="padding:10px 0; border-bottom:1px solid #f5e8c7;">
-              <div style="display:flex; justify-content:space-between; font-weight:600;">
+              <div style="display:flex; justify-content:space-between; font-weight:600; font-size:clamp(13px,2vw,14px);">
                 <span>${item.name}</span>
                 <span style="color:#92400E;">${toBake[item.id]}</span>
               </div>
@@ -996,7 +1194,7 @@
       const txns = sales.length;
 
       if (!txns) {
-        box.innerHTML = `<p style="text-align:center; color:#888; font-size:1.1rem; padding:80px 0;">No sales recorded yet today.</p>`;
+        box.innerHTML = `<p style="text-align:center; color:#888; font-size:clamp(1rem,2vw,1.1rem); padding:60px 0;">No sales recorded yet today.</p>`;
         return;
       }
 
@@ -1008,79 +1206,90 @@
         const earned = qty * i.price;
         flavourRows += `
           <tr style="border-bottom:1px solid #eee;">
-            <td style="padding:12px 0;">${i.name}</td>
-            <td style="padding:12px 0; text-align:right;">${fmt(i.price)}</td>
-            <td style="padding:12px 0; text-align:right;">${qty}</td>
-            <td style="padding:12px 0; text-align:right; font-weight:600;">${fmt(earned)}</td>
+            <td style="padding:10px 0; font-size:clamp(12px,2vw,14px);">${i.name}</td>
+            <td style="padding:10px 0; text-align:right; font-size:clamp(12px,2vw,14px);">${fmt(i.price)}</td>
+            <td style="padding:10px 0; text-align:right; font-size:clamp(12px,2vw,14px);">${qty}</td>
+            <td style="padding:10px 0; text-align:right; font-weight:600; font-size:clamp(12px,2vw,14px);">${fmt(earned)}</td>
           </tr>`;
       });
 
-      let txRows = [...sales].reverse().map(s => `
-        <div style="display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid #eee;">
-          <div>
-            <div>#${s.id} ${s.label ? '— ' + s.label : ''}</div>
-            <div style="font-size:13px; color:#666;">${s.summary}</div>
+      let txRows = [...sales].reverse().map(s => {
+        let labelText = s.label || 'Walk-in';
+        if (s.isPrepaid && s.preorderId) {
+          const po = preorders.find(p => p.id === s.preorderId);
+          if (po) {
+            labelText = po.name + ' (Prepaid)';
+          }
+        }
+        
+        return `
+        <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #eee; font-size:clamp(12px,2vw,14px);">
+          <div style="min-width:0; padding-right:8px;">
+            <div>#${s.id} — ${labelText}</div>
+            <div style="font-size:12px; color:#666; word-break:break-word;">${s.summary}</div>
           </div>
-          <div style="text-align:right;">
+          <div style="text-align:right; flex-shrink:0;">
             <div style="font-weight:700;">${fmt(s.total)}</div>
-            <div style="font-size:12px; color:#888;">${s.time}</div>
+            <div style="font-size:11px; color:#888;">${s.time}</div>
           </div>
         </div>
-      `).join('');
+      `}).join('');
 
       box.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:40px; padding-bottom:30px; border-bottom:3px solid #eee;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px; padding-bottom:20px; border-bottom:3px solid #eee; flex-wrap:wrap; gap:12px;">
           <div>
-            <div style="font-size:2.4rem; font-weight:800; letter-spacing:-0.03em;">Kassav Vero co.</div>
-            <div style="color:#666; margin-top:4px;">Fresh baked daily</div>
+            <div style="font-size:clamp(1.4rem,4vw,2.4rem); font-weight:800; letter-spacing:-0.03em;">Kassav Vero co.</div>
+            <div style="color:#666; margin-top:4px; font-size:clamp(12px,2vw,14px);">Fresh baked daily</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-size:13px; color:#666;">Invoice</div>
-            <div style="font-size:1.3rem; font-weight:700;">${invNo}</div>
-            <div style="margin-top:12px;">
-              <div style="font-size:13px; color:#666;">Date</div>
-              <div style="font-weight:600;">${today()}</div>
+            <div style="font-size:12px; color:#666;">Invoice</div>
+            <div style="font-size:clamp(1rem,2.5vw,1.3rem); font-weight:700;">${invNo}</div>
+            <div style="margin-top:8px;">
+              <div style="font-size:12px; color:#666;">Date</div>
+              <div style="font-weight:600; font-size:clamp(12px,2vw,14px);">${today()}</div>
             </div>
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-bottom:40px;">
-          <div style="background:#F8F7F2; padding:20px; border-radius:16px; text-align:center;">
-            <div style="font-size:2rem; font-weight:700;">${txns}</div>
-            <div style="color:#666;">Transactions</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; margin-bottom:30px;">
+          <div style="background:#F8F7F2; padding:clamp(14px,2vw,20px); border-radius:14px; text-align:center;">
+            <div style="font-size:clamp(1.3rem,3vw,2rem); font-weight:700;">${txns}</div>
+            <div style="color:#666; font-size:clamp(11px,2vw,13px);">Transactions</div>
           </div>
-          <div style="background:#F8F7F2; padding:20px; border-radius:16px; text-align:center;">
-            <div style="font-size:2rem; font-weight:700;">${totalSold}</div>
-            <div style="color:#666;">Kassavas Sold</div>
+          <div style="background:#F8F7F2; padding:clamp(14px,2vw,20px); border-radius:14px; text-align:center;">
+            <div style="font-size:clamp(1.3rem,3vw,2rem); font-weight:700;">${totalSold}</div>
+            <div style="color:#666; font-size:clamp(11px,2vw,13px);">Kassavas Sold</div>
           </div>
-          <div style="background:#F8F7F2; padding:20px; border-radius:16px; text-align:center;">
-            <div style="font-size:2rem; font-weight:700;">${preorders.filter(p=>p.collected).length}</div>
-            <div style="color:#666;">Orders fullfilled</div>
+          <div style="background:#F8F7F2; padding:clamp(14px,2vw,20px); border-radius:14px; text-align:center;">
+            <div style="font-size:clamp(1.3rem,3vw,2rem); font-weight:700;">${preorders.filter(p=>p.collected).length}</div>
+            <div style="color:#666; font-size:clamp(11px,2vw,13px);">Orders fullfilled</div>
           </div>
         </div>
 
-        <h3 style="margin:30px 0 16px; font-size:1.1rem; color:#555;">Flavour Breakdown</h3>
-        <table style="width:100%; border-collapse:collapse; margin-bottom:40px;">
+        <h3 style="margin:24px 0 14px; font-size:clamp(0.9rem,2vw,1.1rem); color:#555;">Flavour Breakdown</h3>
+        <div class="table-wrap">
+        <table style="width:100%; border-collapse:collapse; margin-bottom:30px; min-width:350px;">
           <thead>
             <tr style="border-bottom:2px solid #ddd;">
-              <th style="text-align:left; padding:10px 0; font-weight:600;">Flavour</th>
-              <th style="text-align:right; padding:10px 0; font-weight:600;">Price</th>
-              <th style="text-align:right; padding:10px 0; font-weight:600;">Qty</th>
-              <th style="text-align:right; padding:10px 0; font-weight:600;">Amount</th>
+              <th style="text-align:left; padding:8px 0; font-weight:600; font-size:clamp(11px,2vw,13px);">Flavour</th>
+              <th style="text-align:right; padding:8px 0; font-weight:600; font-size:clamp(11px,2vw,13px);">Price</th>
+              <th style="text-align:right; padding:8px 0; font-weight:600; font-size:clamp(11px,2vw,13px);">Qty</th>
+              <th style="text-align:right; padding:8px 0; font-weight:600; font-size:clamp(11px,2vw,13px);">Amount</th>
             </tr>
           </thead>
           <tbody>${flavourRows}</tbody>
         </table>
+        </div>
 
-        <div style="border-top:3px solid #ddd; padding-top:24px; font-size:1.4rem; font-weight:700; display:flex; justify-content:space-between;">
+        <div style="border-top:3px solid #ddd; padding-top:20px; font-size:clamp(1.3rem,3vw,1.6rem); font-weight:700; display:flex; justify-content:space-between;">
           <span>Total Earned</span>
           <span style="color:var(--primary);">${fmt(totalEarned)}</span>
         </div>
 
-        <h3 style="margin:40px 0 16px; font-size:1.1rem; color:#555;">Transaction Log</h3>
+        <h3 style="margin:30px 0 14px; font-size:clamp(0.9rem,2vw,1.1rem); color:#555;">Transaction Log</h3>
         <div>${txRows}</div>
 
-        <div style="text-align:center; margin-top:60px; color:#888; font-size:14px;">
+        <div style="text-align:center; margin-top:40px; color:#888; font-size:clamp(12px,2vw,14px);">
           Thank you for supporting Kassav Vero. ❤️
         </div>
       `;
@@ -1112,7 +1321,6 @@
       document.getElementById('page-' + id).classList.add('active');
       el.classList.add('active');
       
-      // Clear notification badge when switching to preorders tab
       if (id === 'preorders') {
         newPoCount = 0;
         updateBadge();
@@ -1120,6 +1328,8 @@
       
       if (id === 'summary') renderInvoice();
       if (id === 'preorders') renderToBake();
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // Initialize
