@@ -2,13 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#1D9E75">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kassav Vero. • POS</title>
   
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDKs (v9 compat for easier transition) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   
@@ -25,7 +22,6 @@
       --success: #1D9E75;
       --danger: #E24B4A;
       --free: #8B5CF6;
-      --touch-target: 44px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,56 +30,51 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
-      padding: 16px;
-      padding-bottom: env(safe-area-inset-bottom, 16px);
-      -webkit-tap-highlight-color: transparent;
-      -webkit-font-smoothing: antialiased;
+      padding: 20px;
     }
 
     .container { max-width: 1400px; margin: 0 auto; }
 
-    .header { text-align: center; margin-bottom: 20px; }
-    .header h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 700; letter-spacing: -0.02em; }
-    .header p { color: var(--text-light); font-size: clamp(0.9rem, 2vw, 1.05rem); }
+    .header { text-align: center; margin-bottom: 24px; }
+    .header h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.02em; }
+    .header p { color: var(--text-light); font-size: 1.05rem; }
 
     .tabs {
-      display: flex; gap: 6px; margin-bottom: 20px; background: white;
-      padding: 6px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-      width: 100%; max-width: 500px; margin-left: auto; margin-right: auto;
-      position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      display: flex; gap: 12px; margin-bottom: 24px; background: white;
+      padding: 8px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      width: fit-content; margin: 0 auto; position: relative;
     }
     .tab {
-      padding: 12px 16px; border: none; border-radius: 10px; background: transparent;
-      font-size: clamp(13px, 2.5vw, 15px); font-weight: 600; color: var(--text-light);
-      cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative; white-space: nowrap; flex-shrink: 0;
-      min-height: var(--touch-target); display: flex; align-items: center;
+      padding: 14px 28px; border: none; border-radius: 12px; background: transparent;
+      font-size: 15px; font-weight: 600; color: var(--text-light); cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
     }
-    .tab:hover { background: #f5f3eb; }
-    .tab:active { transform: scale(0.96); }
+    .tab:hover { background: #f5f3eb; transform: translateY(-1px); }
     .tab.active {
       background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(29,158,117,0.35);
     }
 
+    /* Notification badge */
     .notification-badge {
       position: absolute;
-      top: 2px;
-      right: 2px;
+      top: -6px;
+      right: -6px;
       background: #E24B4A;
       color: white;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
-      min-width: 18px;
-      height: 18px;
-      border-radius: 9px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 0 4px;
       box-shadow: 0 2px 6px rgba(226,75,74,0.4);
       animation: badgePop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .notification-badge.show { display: flex; }
+    .notification-badge.show {
+      display: flex;
+    }
 
     @keyframes badgePop {
       0% { transform: scale(0); }
@@ -92,175 +83,147 @@
     }
 
     .page { display: none; }
-    .page.active { display: block; animation: fadeIn 0.3s ease; }
+    .page.active { display: block; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .pos-wrap { 
-      display: grid; 
-      grid-template-columns: 1fr 380px; 
-      gap: 20px;
-      align-items: start;
-    }
+    .pos-wrap { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
 
     .menu-section, .panel {
-      background: white; border-radius: 18px; padding: 20px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+      background: white; border-radius: 20px; padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.07);
     }
 
     .section-title {
-      font-size: clamp(0.85rem, 2vw, 1.1rem); font-weight: 600; color: var(--text-light);
-      margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;
-      display: flex; justify-content: space-between; align-items: center;
+      font-size: 1.1rem; font-weight: 600; color: var(--text-light);
+      margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;
     }
 
     .menu-grid {
-      display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-      gap: 12px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;
     }
 
     .item-card {
-      background: white; border: 1px solid var(--border); border-radius: 16px;
-      padding: clamp(14px, 2vw, 20px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
+      background: white; border: 1px solid var(--border); border-radius: 18px;
+      padding: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .item-card:active { transform: scale(0.97); }
+    .item-card:hover { transform: translateY(-6px); box-shadow: 0 15px 30px rgba(0,0,0,0.12); border-color: var(--primary); }
 
-    .item-name { font-size: clamp(1.1rem, 2.5vw, 1.35rem); font-weight: 700; margin-bottom: 6px; }
-    .price-badge { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; margin-bottom: 10px; }
+    .item-name { font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; }
+    .price-badge { display: inline-block; font-size: 12px; padding: 4px 12px; border-radius: 30px; font-weight: 600; margin-bottom: 12px; }
     .badge-plain { background: #EDE9E0; color: #5C5544; }
     .badge-special { background: #FEF3C7; color: #92400E; }
 
-    .item-price { font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+    .item-price { font-size: 2.1rem; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
 
     .qty-row {
       display: flex; align-items: center; justify-content: space-between;
-      background: #F8F7F2; border-radius: 12px; padding: 6px; gap: 8px;
+      background: #F8F7F2; border-radius: 14px; padding: 8px;
     }
     .qty-btn {
-      width: clamp(44px, 8vw, 52px); height: clamp(44px, 8vw, 52px);
-      border: none; border-radius: 10px; font-size: clamp(22px, 4vw, 26px);
+      width: 52px; height: 52px; border: none; border-radius: 12px; font-size: 26px;
       display: flex; align-items: center; justify-content: center; cursor: pointer;
-      transition: all 0.2s; flex-shrink: 0; user-select: none;
-      -webkit-user-select: none;
+      transition: all 0.2s;
     }
     .qty-btn.minus { background: #FFF1F1; color: var(--danger); }
     .qty-btn.plus { background: #E6F7F0; color: var(--primary); }
-    .qty-btn:active { transform: scale(0.9); }
-
-    .qty-val {
-      font-size: clamp(1rem, 2.5vw, 1.3rem);
-      font-weight: 700;
-      min-width: 24px;
-      text-align: center;
-    }
+    .qty-btn:hover { transform: scale(1.12); }
 
     .free-btn {
-      width: 100%; margin-top: 12px; padding: clamp(12px, 2vw, 14px); border-radius: 12px;
+      width: 100%; margin-top: 12px; padding: 12px; border-radius: 12px;
       background: #F3E8FF; color: var(--free); border: 1px solid #C4B5FD;
       font-weight: 600; cursor: pointer; transition: all 0.2s;
-      min-height: var(--touch-target); font-size: clamp(13px, 2vw, 14px);
     }
-    .free-btn:active { transform: scale(0.97); }
     .free-btn.active {
       background: var(--free); color: white; border-color: var(--free);
     }
 
-    .order-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: clamp(13px, 2vw, 15px); }
+    .order-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
     .order-total {
-      font-size: clamp(1.1rem, 2.5vw, 1.4rem); font-weight: 700; padding-top: 14px; margin-top: 10px;
+      font-size: 1.4rem; font-weight: 700; padding-top: 16px; margin-top: 12px;
       border-top: 2px solid var(--border); display: flex; justify-content: space-between; color: var(--primary);
     }
 
     .checkout-btn {
-      width: 100%; padding: clamp(14px, 2vw, 18px); font-size: clamp(1rem, 2.5vw, 1.2rem); font-weight: 700;
-      background: var(--primary); color: white; border: none; border-radius: 14px;
-      cursor: pointer; margin-top: 10px; transition: all 0.25s;
+      width: 100%; padding: 18px; font-size: 1.2rem; font-weight: 700;
+      background: var(--primary); color: white; border: none; border-radius: 16px;
+      cursor: pointer; margin-top: 12px; transition: all 0.25s;
       box-shadow: 0 6px 20px rgba(29,158,117,0.35);
-      min-height: var(--touch-target);
     }
-    .checkout-btn:active { transform: scale(0.97); background: var(--primary-dark); }
+    .checkout-btn:hover { background: var(--primary-dark); transform: translateY(-3px); }
 
-    .clear-btn { font-size: 13px; color: var(--danger); background: none; border: none; cursor: pointer; text-decoration: underline; min-height: var(--touch-target); }
+    .clear-btn { font-size: 13px; color: var(--danger); background: none; border: none; cursor: pointer; text-decoration: underline; }
 
     .search-box {
-      width: 100%; padding: 12px 14px; border: 1px solid var(--border);
-      border-radius: 10px; font-size: 15px; margin-bottom: 14px;
-      -webkit-appearance: none;
+      width: 100%; padding: 14px 16px; border: 1px solid var(--border);
+      border-radius: 12px; font-size: 15px; margin-bottom: 16px;
     }
-    .search-box:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(29,158,117,0.1); }
 
     .priority-star {
-      cursor: pointer; font-size: 1.3rem; color: #ccc; transition: color 0.2s;
-      min-width: var(--touch-target); min-height: var(--touch-target);
-      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1.4rem; color: #ccc; transition: color 0.2s;
     }
     .priority-star.active { color: #F59E0B; }
 
     .to-bake {
-      background: #FEF3C7; border-radius: 14px; padding: 16px; margin: 16px 0;
+      background: #FEF3C7; border-radius: 16px; padding: 20px; margin: 20px 0;
     }
-    .to-bake h3 { margin-bottom: 14px; color: #92400E; font-size: clamp(0.9rem, 2vw, 1rem); }
-    .customer-name { font-size: 11px; color: #92400E; opacity: 0.85; display: inline-block; margin: 2px 4px; }
+    .to-bake h3 { margin-bottom: 16px; color: #92400E; }
+    .customer-name { font-size: 12px; color: #92400E; opacity: 0.85; }
 
-    .prepaid-toggle { display: flex; align-items: center; gap: 8px; margin: 14px 0; font-weight: 600; color: #1E40AF; min-height: var(--touch-target); }
+    .prepaid-toggle { display: flex; align-items: center; gap: 8px; margin: 16px 0; font-weight: 600; color: #1E40AF; }
 
     .add-po-btn, .po-collect-btn {
-      width: 100%; padding: clamp(14px, 2vw, 16px); font-size: clamp(0.95rem, 2vw, 1.1rem); font-weight: 600;
-      border: none; border-radius: 12px; cursor: pointer; transition: all 0.25s;
-      min-height: var(--touch-target);
+      width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 600;
+      border: none; border-radius: 14px; cursor: pointer; transition: all 0.25s;
     }
     .add-po-btn { background: #185FA5; color: white; }
-    .add-po-btn:active { background: #0d4070; transform: scale(0.97); }
+    .add-po-btn:hover { background: #0d4070; transform: translateY(-2px); }
     .po-collect-btn { background: var(--primary); color: white; }
-    .po-collect-btn:active { background: var(--primary-dark); transform: scale(0.97); }
+    .po-collect-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
     .po-delete-btn {
-      padding: 12px 18px; background: #FFF1F1; color: var(--danger);
-      border: 1px solid #F5B8B8; border-radius: 10px; cursor: pointer;
-      min-height: var(--touch-target); min-width: var(--touch-target);
+      padding: 12px 20px; background: #FFF1F1; color: var(--danger);
+      border: 1px solid #F5B8B8; border-radius: 12px; cursor: pointer;
     }
-    .po-delete-btn:active { background: #FEE2E2; }
 
+    /* Connection status */
     .connection-status {
       position: fixed;
-      top: 12px;
-      right: 12px;
-      padding: 6px 12px;
-      border-radius: 16px;
-      font-size: 11px;
+      top: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
       font-weight: 600;
       z-index: 1000;
-      pointer-events: none;
     }
-    .connection-status.online { background: #D1FAE5; color: #065F46; }
-    .connection-status.offline { background: #FEE2E2; color: #991B1B; }
+    .connection-status.online {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+    .connection-status.offline {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
 
+    /* Notification permission prompt */
     .notif-prompt {
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       background: white;
-      padding: 14px 20px;
-      border-radius: 14px;
+      padding: 16px 24px;
+      border-radius: 16px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.15);
       z-index: 1000;
       display: none;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       font-weight: 500;
       color: var(--text);
-      font-size: 14px;
-      max-width: calc(100vw - 32px);
-      width: auto;
+      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .notif-prompt.show { display: flex; animation: slideUp 0.3s ease; }
+    .notif-prompt.show { display: flex; }
     .notif-prompt button {
-      padding: 8px 18px;
+      padding: 8px 20px;
       background: var(--primary);
       color: white;
       border: none;
@@ -268,190 +231,51 @@
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
-      min-height: 36px;
     }
+    .notif-prompt button:hover { background: var(--primary-dark); }
 
     @keyframes slideUp {
       from { transform: translateX(-50%) translateY(20px); opacity: 0; }
       to { transform: translateX(-50%) translateY(0); opacity: 1; }
     }
 
-    .table-wrap {
-      overflow-x: auto; -webkit-overflow-scrolling: touch;
-      margin: 0 -8px; padding: 0 8px;
+    /* Customer name input style for POS */
+    .customer-input-group {
+      margin: 16px 0 12px;
+      background: #F8F7F2;
+      border-radius: 16px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
     }
-
-    /* ============ MOBILE RESPONSIVE ============ */
-    @media (max-width: 900px) {
-      .pos-wrap {
-        grid-template-columns: 1fr;
-      }
-      
-      .sidebar {
-        display: flex; flex-direction: column; gap: 14px;
-      }
+    .customer-input-group:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(29,158,117,0.2);
     }
-
-    @media (max-width: 768px) {
-      body {
-        padding: 10px;
-        padding-bottom: env(safe-area-inset-bottom, 10px);
-      }
-
-      .header h1 { font-size: 1.4rem; }
-      .header p { font-size: 0.85rem; }
-
-      .tabs {
-        gap: 4px; padding: 4px; border-radius: 12px;
-        position: sticky; top: 10px; z-index: 100;
-        background: rgba(255,255,255,0.95);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-      }
-      .tab {
-        padding: 10px 12px; font-size: 12px; border-radius: 8px;
-        min-height: 38px;
-      }
-
-      .menu-section, .panel {
-        padding: 14px; border-radius: 14px;
-      }
-
-      .menu-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 8px;
-      }
-
-      .item-card {
-        padding: 12px; border-radius: 12px;
-      }
-
-      .item-price {
-        font-size: 1.3rem;
-      }
-
-      .qty-btn {
-        width: 40px; height: 40px; font-size: 20px; border-radius: 8px;
-      }
-
-      .qty-val {
-        font-size: 1rem;
-      }
-
-      .checkout-btn {
-        padding: 14px; font-size: 1rem; border-radius: 12px;
-      }
-
-      #page-preorders > div {
-        grid-template-columns: 1fr !important;
-        gap: 14px;
-      }
-
-      #invoice-box {
-        padding: 20px 16px !important;
-        border-radius: 14px !important;
-      }
-
-      #invoice-box table {
-        font-size: 13px;
-      }
-
-      #invoice-box h3 {
-        font-size: 0.95rem;
-      }
+    .customer-input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      outline: none;
+      font-weight: 500;
     }
-
-    @media (max-width: 480px) {
-      body {
-        padding: 8px;
-        padding-bottom: env(safe-area-inset-bottom, 8px);
-      }
-
-      .header {
-        margin-bottom: 12px;
-      }
-      .header h1 {
-        font-size: 1.2rem;
-      }
-      .header p {
-        font-size: 0.8rem;
-      }
-
-      .tabs {
-        gap: 2px;
-        top: 8px;
-      }
-      .tab {
-        padding: 8px 10px;
-        font-size: 11px;
-        min-height: 34px;
-      }
-
-      .menu-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-      }
-
-      .item-card {
-        padding: 10px;
-        border-radius: 10px;
-      }
-
-      .item-name {
-        font-size: 0.9rem;
-      }
-
-      .item-price {
-        font-size: 1.1rem;
-        margin-bottom: 8px;
-      }
-
-      .price-badge {
-        font-size: 10px;
-        padding: 2px 8px;
-      }
-
-      .qty-btn {
-        width: 36px;
-        height: 36px;
-        font-size: 18px;
-        border-radius: 8px;
-      }
-
-      .qty-val {
-        font-size: 0.9rem;
-      }
-
-      .free-btn {
-        font-size: 12px;
-        padding: 10px;
-      }
-
-      .checkout-btn {
-        font-size: 0.9rem;
-        padding: 12px;
-      }
-
-      .section-title {
-        font-size: 0.8rem;
-        margin-bottom: 10px;
-      }
-
-      .notif-prompt {
-        font-size: 12px;
-        padding: 10px 14px;
-        bottom: 10px;
-      }
-
-      .notif-prompt button {
-        font-size: 12px;
-        padding: 6px 14px;
-      }
+    .customer-input-group label {
+      display: block;
+      font-size: 12px;
+      padding: 8px 12px 0 12px;
+      color: var(--text-light);
+      font-weight: 600;
+      letter-spacing: 0.3px;
     }
   </style>
 </head>
 <body>
+  <!-- Connection indicator -->
   <div class="connection-status online" id="connection-status">🟢 Connected</div>
+
+  <!-- Notification permission prompt -->
   <div class="notif-prompt" id="notif-prompt">
     <span>🔔 Get notified of new orders</span>
     <button onclick="requestNotificationPermission()">Enable</button>
@@ -483,7 +307,12 @@
 
         <div class="sidebar">
           <div class="panel">
-            <div class="section-title">Current Order</div>
+            <div class="panel-title"><span>Current Order</span></div>
+            <!-- Customer name field for walk-in orders -->
+            <div class="customer-input-group">
+              <label>👤 Customer Name (Walk‑in)</label>
+              <input type="text" id="walkin-customer-name" placeholder="e.g. Maria, John, or leave blank" autocomplete="off">
+            </div>
             <div id="order-lines"><p style="text-align:center; color:#888; padding:40px 0;">No items yet</p></div>
             <div class="order-total">
               <span>Total</span>
@@ -493,7 +322,7 @@
           </div>
 
           <div class="panel">
-            <div class="section-title">
+            <div class="panel-title">
               <span>Today's Sales</span>
               <button class="clear-btn" onclick="clearSales()">Clear Day</button>
             </div>
@@ -527,9 +356,9 @@
           <div class="section-title" style="margin:24px 0 16px;">Select Items</div>
           <div id="po-item-grid"></div>
 
-          <div style="margin:28px 0; display:flex; justify-content:space-between; align-items:center; font-size:clamp(1rem, 2vw, 1.15rem);">
+          <div style="margin:28px 0; display:flex; justify-content:space-between; align-items:center; font-size:1.15rem;">
             <span style="color:#666;">Order Total</span>
-            <span id="po-preview-total" style="font-weight:700; color:var(--primary); font-size:clamp(1.3rem, 3vw, 1.7rem);">$0.00</span>
+            <span id="po-preview-total" style="font-weight:700; color:var(--primary); font-size:1.7rem;">$0.00</span>
           </div>
 
           <button class="add-po-btn" id="save-po-btn" onclick="savePreorder()">Save Pre-order</button>
@@ -562,18 +391,19 @@
   </div>
 
   <script>
-    // ==================== FIREBASE SETUP ====================
+    // ==================== FIREBASE SETUP (UPDATED CREDENTIALS) ====================
     const firebaseConfig = {
-      apiKey: "AIzaSyD8pNws60ZIdSXfbWmbIC7H3EOQwjIH7bw",
-      authDomain: "pos-system-45a85.firebaseapp.com",
-      databaseURL: "https://pos-system-45a85-default-rtdb.firebaseio.com",
-      projectId: "pos-system-45a85",
-      storageBucket: "pos-system-45a85.firebasestorage.app",
-      messagingSenderId: "626364063546",
-      appId: "1:626364063546:web:d0c6d73837e00d5d747a03",
-      measurementId: "G-9SXNLQ4GSL"
+      apiKey: "AIzaSyBL56lwymJiRoG5oX9YI1lQwacs1h7zmrk",
+      authDomain: "new-project-334ad.firebaseapp.com",
+      databaseURL: "https://new-project-334ad-default-rtdb.firebaseio.com",
+      projectId: "new-project-334ad",
+      storageBucket: "new-project-334ad.firebasestorage.app",
+      messagingSenderId: "527407919643",
+      appId: "1:527407919643:web:d9272929fc719a477e3ebe",
+      measurementId: "G-R4JCMB2QX7"
     };
 
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     
@@ -609,7 +439,6 @@
     const timeNow = () => new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
     // ====================== NOTIFICATION SYSTEM ======================
-    
     function checkNotificationSupport() {
       if ('Notification' in window && 'serviceWorker' in navigator) {
         if (Notification.permission === 'granted') {
@@ -634,60 +463,45 @@
 
     function showNotification(title, body) {
       if (!notificationEnabled) return;
-      
       if ('Notification' in window && Notification.permission === 'granted') {
         if (navigator.serviceWorker && navigator.serviceWorker.controller) {
           navigator.serviceWorker.ready.then(registration => {
-            registration.showNotification(title, {
-              body: body,
-              icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%231D9E75"/><text x="50" y="65" text-anchor="middle" fill="white" font-size="40" font-weight="bold">K</text></svg>',
-              badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%231D9E75"/><text x="50" y="65" text-anchor="middle" fill="white" font-size="40" font-weight="bold">K</text></svg>',
-              vibrate: [200, 100, 200],
-              tag: 'kassav-vero-notification'
-            });
+            registration.showNotification(title, { body: body });
           });
         } else {
-          new Notification(title, {
-            body: body,
-            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%231D9E75"/></svg>'
-          });
+          new Notification(title, { body: body });
         }
       }
     }
 
     // ====================== FIREBASE SYNC ======================
-    
     const connectedRef = database.ref('.info/connected');
     connectedRef.on('value', (snap) => {
       const status = document.getElementById('connection-status');
       if (snap.val() === true) {
-        status.textContent = '🟢';
+        status.textContent = '🟢 Connected';
         status.className = 'connection-status online';
       } else {
-        status.textContent = '🔴';
+        status.textContent = '🔴 Disconnected';
         status.className = 'connection-status offline';
       }
     });
 
     const presenceRef = database.ref('presence');
-    presenceRef.child(deviceId).set({
-      lastSeen: firebase.database.ServerValue.TIMESTAMP,
-      device: navigator.userAgent.includes('Mobile') ? '📱 Mobile' : '💻 Desktop'
-    });
+    presenceRef.child(deviceId).set({ lastSeen: firebase.database.ServerValue.TIMESTAMP, device: navigator.userAgent.includes('Mobile') ? '📱 Mobile' : '💻 Desktop' });
     presenceRef.child(deviceId).onDisconnect().remove();
 
-    // Listen for sales changes - RECALCULATE flavourTotals FROM SCRATCH
+    // Listen for sales changes
     database.ref('sales').on('value', (snapshot) => {
       const data = snapshot.val();
       sales = data ? Object.values(data) : [];
       txCount = sales.length;
       
-      // Reset and recalculate - no double counting
       ITEMS.forEach(i => flavourTotals[i.id] = 0);
       sales.forEach(s => {
         if (s.items && !s.isPrepaid) {
-          s.items.forEach(i => {
-            flavourTotals[i.id] = (flavourTotals[i.id] || 0) + i.qty;
+          s.items.forEach(i => { 
+            flavourTotals[i.id] = (flavourTotals[i.id] || 0) + i.qty; 
           });
         }
       });
@@ -703,22 +517,17 @@
       
       if (preorders.length > 0) {
         const currentIds = new Set(newPreorders.map(p => p.id));
-        
         newPreorders.forEach(po => {
           if (!lastKnownPoIds.has(po.id) && lastKnownPoIds.size > 0) {
             newPoCount++;
             updateBadge();
             showNotification('📋 New Order!', `${po.name} placed an order for ${po.items.map(i => i.name + ' ×' + i.qty).join(', ')}`);
           }
-          
           if (po.collected && lastKnownPoIds.has(po.id)) {
             const oldPo = preorders.find(p => p.id === po.id);
-            if (oldPo && !oldPo.collected) {
-              showNotification('✅ Order Collected', `${po.name} collected their order.`);
-            }
+            if (oldPo && !oldPo.collected) showNotification('✅ Order Collected', `${po.name} collected their order.`);
           }
         });
-        
         lastKnownPoIds = currentIds;
       } else {
         lastKnownPoIds = new Set(newPreorders.map(p => p.id));
@@ -726,7 +535,6 @@
       
       preorders = newPreorders;
       poCount = preorders.length;
-      
       renderPoList();
       renderToBake();
       renderInvoice();
@@ -737,24 +545,18 @@
       if (newPoCount > 0) {
         badge.textContent = newPoCount > 99 ? '99+' : newPoCount;
         badge.classList.add('show');
-      } else {
-        badge.classList.remove('show');
-      }
+      } else { badge.classList.remove('show'); }
     }
 
     function saveSalesToFirebase() {
-      const salesObj = {};
-      sales.forEach(s => {
-        salesObj[s.id] = s;
-      });
+      const salesObj = {}; 
+      sales.forEach(s => { salesObj[s.id] = s; });
       database.ref('sales').set(salesObj);
     }
 
     function savePreordersToFirebase() {
-      const preordersObj = {};
-      preorders.forEach(p => {
-        preordersObj[p.id] = p;
-      });
+      const preordersObj = {}; 
+      preorders.forEach(p => { preordersObj[p.id] = p; });
       database.ref('preorders').set(preordersObj);
     }
 
@@ -766,9 +568,9 @@
           <span class="price-badge ${item.tier === 'plain' ? 'badge-plain' : 'badge-special'}">${item.tier}</span>
           <div class="item-price">${fmt(item.price)}</div>
           <div class="qty-row">
-            <button class="qty-btn minus" onclick="change('${item.id}', -1)" aria-label="Decrease ${item.name}">−</button>
+            <button class="qty-btn minus" onclick="change('${item.id}', -1)">−</button>
             <span class="qty-val" id="qty-${item.id}">0</span>
-            <button class="qty-btn plus" onclick="change('${item.id}', 1)" aria-label="Increase ${item.name}">+</button>
+            <button class="qty-btn plus" onclick="change('${item.id}', 1)">+</button>
           </div>
         </div>
       `).join('');
@@ -796,7 +598,6 @@
       const lines = ITEMS.filter(i => (order[i.id] || 0) > 0);
       const ol = document.getElementById('order-lines');
       const btn = document.getElementById('checkout-btn');
-
       if (!lines.length) {
         ol.innerHTML = '<p style="text-align:center; color:#888; padding:40px 0;">No items yet</p>';
         btn.disabled = true;
@@ -817,8 +618,8 @@
       if (!lines.length) return;
 
       const btn = document.getElementById('checkout-btn');
-      btn.style.background = 'var(--primary-dark)';
-      setTimeout(() => btn.style.background = '', 600);
+      btn.classList.add('success');
+      setTimeout(() => btn.classList.remove('success'), 800);
 
       const items = lines.map(i => ({
         id: i.id,
@@ -828,10 +629,15 @@
         free: isAllFree
       }));
       
-      recordSale(items, orderTotal(), "Walk-in");
+      const customerNameInput = document.getElementById('walkin-customer-name');
+      let customerLabel = customerNameInput.value.trim();
+      if (customerLabel === "") customerLabel = "Walk-in";
+      
+      recordSale(items, orderTotal(), customerLabel);
 
       order = {};
       isAllFree = false;
+      customerNameInput.value = "";
       document.getElementById('free-all-btn').classList.remove('active');
       document.getElementById('free-all-btn').textContent = "🎟️ Mark All Items as Free";
       ITEMS.forEach(i => {
@@ -843,38 +649,36 @@
 
     function recordSale(items, total, label = "", preorderId = null, isPrepaid = false) {
       const nextId = sales.length > 0 ? Math.max(...sales.map(s => s.id)) + 1 : 1;
-      
       const summary = items.map(i => `${i.name} x${i.qty}${i.free ? ' (Free)' : ''}`).join(', ');
-      
       const newSale = {
         id: nextId,
         time: timeNow(),
         summary,
         total: isPrepaid ? 0 : total,
-        label,
-        items,
-        preorderId,
-        isPrepaid,
-        deviceId
+        label: label || (isPrepaid ? "Prepaid" : "Walk-in"),
+        items: items,
+        preorderId: preorderId,
+        isPrepaid: isPrepaid,
+        deviceId: deviceId
       };
       
       sales.push(newSale);
       saveSalesToFirebase();
-      // REMOVED: manual flavourTotals update - Firebase listener handles it
+      
+      if (!isPrepaid) {
+        items.forEach(i => flavourTotals[i.id] = (flavourTotals[i.id] || 0) + i.qty);
+      }
+      
+      renderSalesList();
     }
 
     function deleteSale(id) {
       const sale = sales.find(s => s.id === id);
       if (!sale) return;
-      
       if (sale.preorderId) {
         const po = preorders.find(p => p.id === sale.preorderId);
-        if (po) {
-          po.collected = false;
-          savePreordersToFirebase();
-        }
+        if (po) { po.collected = false; savePreordersToFirebase(); }
       }
-      
       sales = sales.filter(s => s.id !== id);
       saveSalesToFirebase();
     }
@@ -886,28 +690,18 @@
         document.getElementById('day-total').textContent = '$0.00';
         return;
       }
-      sl.innerHTML = [...sales].reverse().map(s => {
-        let labelText = s.label || '';
-        if (s.isPrepaid && s.preorderId) {
-          const po = preorders.find(p => p.id === s.preorderId);
-          if (po) {
-            labelText = po.name + ' · Prepaid';
-          }
-        }
-        if (!labelText) labelText = s.label || 'Walk-in';
-        
-        return `
+      sl.innerHTML = [...sales].reverse().map(s => `
         <div style="padding:14px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-          <div style="flex:1; min-width:0; padding-right:8px;">
-            <div style="font-size:12px; color:#888;">#${s.id} · ${labelText} • ${s.time}</div>
-            <div style="color:#555; font-size:clamp(12px,2vw,14px); word-break:break-word;">${s.summary}</div>
+          <div style="flex:1;">
+            <div style="font-size:12.5px; color:#888;">#${s.id} ${s.label ? '· ' + s.label : ''} • ${s.time}</div>
+            <div style="color:#555;">${s.summary}</div>
             <div style="font-weight:700; color:${s.isPrepaid ? '#64748B' : 'var(--primary)'}; margin-top:6px;">
               ${s.isPrepaid ? '(Prepaid)' : fmt(s.total)}
             </div>
           </div>
-          <button onclick="deleteSale(${s.id})" style="padding:6px 10px; background:#FFF1F1; color:var(--danger); border:1px solid #F5B8B8; border-radius:8px; cursor:pointer; min-width:36px; min-height:36px; flex-shrink:0;" aria-label="Delete sale">✕</button>
+          <button onclick="deleteSale(${s.id})" style="padding:6px 10px; background:#FFF1F1; color:var(--danger); border:1px solid #F5B8B8; border-radius:8px; cursor:pointer;">✕</button>
         </div>
-      `}).join('');
+      `).join('');
       const dayTotal = sales.reduce((a, s) => a + (s.total || 0), 0);
       document.getElementById('day-total').textContent = fmt(dayTotal);
     }
@@ -916,10 +710,10 @@
     function renderPoItemGrid() {
       document.getElementById('po-item-grid').innerHTML = ITEMS.map(item => `
         <div style="background:#F8F7F2; border-radius:14px; padding:14px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-weight:500; font-size:clamp(13px,2vw,15px);">${item.name}</span>
+          <span style="font-weight:500;">${item.name}</span>
           <div style="display:flex; align-items:center; gap:8px;">
             <button class="qty-btn minus" style="width:38px;height:38px;font-size:20px;" onclick="poChange('${item.id}',-1)">−</button>
-            <span class="qty-val" id="po-qty-${item.id}" style="font-size:1.1rem;">0</span>
+            <span class="qty-val" id="po-qty-${item.id}" style="font-size:1.3rem;">0</span>
             <button class="qty-btn plus" style="width:38px;height:38px;font-size:20px;" onclick="poChange('${item.id}',1)">+</button>
           </div>
         </div>
@@ -940,39 +734,25 @@
     function savePreorder() {
       const name = document.getElementById('po-name').value.trim();
       if (!name) return alert('Please enter a customer name.');
-
-      const items = ITEMS.filter(i => (poOrder[i.id] || 0) > 0)
-                         .map(i => ({id:i.id, name:i.name, price:i.price, qty:poOrder[i.id]}));
-
+      const items = ITEMS.filter(i => (poOrder[i.id] || 0) > 0).map(i => ({id:i.id, name:i.name, price:i.price, qty:poOrder[i.id]}));
       if (!items.length) return alert('Please add at least one item.');
-
       const isPrepaid = document.getElementById('po-prepaid').checked;
       const total = items.reduce((s, i) => s + i.price * i.qty, 0);
-
+      
       if (editingPoId) {
         const po = preorders.find(p => p.id === editingPoId);
-        if (po) {
-          po.name = name;
-          po.items = items;
-          po.total = total;
-          po.isPrepaid = isPrepaid;
-        }
+        if (po) { po.name = name; po.items = items; po.total = total; po.isPrepaid = isPrepaid; }
       } else {
         const nextId = preorders.length > 0 ? Math.max(...preorders.map(p => p.id)) + 1 : 1;
-        preorders.push({
-          id: nextId,
-          name,
-          items,
-          total,
-          collected: false,
-          isPrepaid,
-          priority: false,
-          deviceId
-        });
+        preorders.push({ id: nextId, name, items, total, collected: false, isPrepaid, priority: false, deviceId });
       }
-
+      
       savePreordersToFirebase();
       resetPoForm();
+      
+      // Force immediate refresh of pending pre-orders and to-bake list
+      renderPoList();
+      renderToBake();
     }
 
     function resetPoForm() {
@@ -982,30 +762,20 @@
       editingPoId = null;
       document.getElementById('save-po-btn').textContent = 'Save Pre-order';
       poOrder = {};
-      ITEMS.forEach(i => {
-        const el = document.getElementById(`po-qty-${i.id}`);
-        if (el) el.textContent = 0;
-      });
+      ITEMS.forEach(i => { const el = document.getElementById(`po-qty-${i.id}`); if (el) el.textContent = 0; });
       updatePoPreview();
     }
 
     function editPreorder(id) {
       const po = preorders.find(p => p.id === id);
       if (!po || po.collected) return;
-
       editingPoId = id;
       document.getElementById('po-name').value = po.name;
       document.getElementById('po-prepaid').checked = !!po.isPrepaid;
       document.getElementById('save-po-btn').textContent = 'Update Pre-order';
-
       poOrder = {};
       po.items.forEach(item => poOrder[item.id] = item.qty);
-
-      ITEMS.forEach(i => {
-        const el = document.getElementById(`po-qty-${i.id}`);
-        if (el) el.textContent = poOrder[i.id] || 0;
-      });
-
+      ITEMS.forEach(i => { const el = document.getElementById(`po-qty-${i.id}`); if (el) el.textContent = poOrder[i.id] || 0; });
       updatePoPreview();
       renderPoList();
       switchTab('preorders', document.querySelectorAll('.tab')[1]);
@@ -1013,131 +783,83 @@
 
     function togglePriority(id) {
       const po = preorders.find(p => p.id === id);
-      if (po) {
-        po.priority = !po.priority;
-        savePreordersToFirebase();
-      }
+      if (po) { po.priority = !po.priority; savePreordersToFirebase(); }
     }
 
     function collectPreorder(id) {
       const po = preorders.find(p => p.id === id);
       if (!po || po.collected) return;
-      
       po.collected = true;
       savePreordersToFirebase();
-      
-      recordSale(po.items, po.total, po.name, po.id, po.isPrepaid);
+      recordSale(po.items, po.total, po.isPrepaid ? "Prepaid Money" : po.name, po.id, po.isPrepaid);
+      renderPoList();
+      renderToBake();
     }
 
     function deletePreorder(id) {
       preorders = preorders.filter(p => p.id !== id);
       savePreordersToFirebase();
+      renderPoList();
+      renderToBake();
     }
 
     function renderPoList() {
       const searchTerm = (document.getElementById('po-search')?.value || '').toLowerCase().trim();
-
-      let pending = preorders.filter(p => !p.collected && p.id !== editingPoId);
-
-      if (searchTerm) {
-        pending = pending.filter(p => p.name.toLowerCase().includes(searchTerm));
-      }
-
-      pending.sort((a, b) => {
-        if (a.priority && !b.priority) return -1;
-        if (!a.priority && b.priority) return 1;
-        return a.name.localeCompare(b.name);
-      });
-
+      let pending = preorders.filter(p => !p.collected && (!editingPoId || p.id !== editingPoId));
+      if (searchTerm) pending = pending.filter(p => p.name.toLowerCase().includes(searchTerm));
+      pending.sort((a,b) => { if (a.priority && !b.priority) return -1; if (!a.priority && b.priority) return 1; return a.name.localeCompare(b.name); });
       const el = document.getElementById('po-list');
-
-      if (!pending.length) {
-        el.innerHTML = searchTerm 
-          ? '<p style="text-align:center; color:#888; padding:40px 0;">No matching pre-orders</p>'
-          : '<p style="text-align:center; color:#888; padding:60px 0;">No pending pre-orders</p>';
-        return;
+      if (!pending.length) { 
+        el.innerHTML = searchTerm ? '<p style="text-align:center; color:#888; padding:40px 0;">No matching pre-orders</p>' : '<p style="text-align:center; color:#888; padding:60px 0;">No pending pre-orders</p>'; 
+        return; 
       }
-
       el.innerHTML = pending.map(po => `
-        <div style="background:white; border:1px solid var(--border); border-radius:16px; padding:clamp(14px,2vw,20px); margin-bottom:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <div style="display:flex; align-items:center; gap:6px;">
-              <strong style="font-size:clamp(0.95rem,2vw,1.1rem);">${po.name}</strong>
-              <span onclick="togglePriority(${po.id})" class="priority-star ${po.priority ? 'active' : ''}">★</span>
-            </div>
-            ${po.isPrepaid ? '<span style="background:#DBEAFE;color:#1E40AF;padding:3px 10px;border-radius:20px;font-size:11px;">Prepaid</span>' : '<span style="background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:20px;font-size:11px;">Pending</span>'}
+        <div style="background:white; border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:8px;"><strong style="font-size:1.1rem;">${po.name}</strong><span onclick="togglePriority(${po.id})" class="priority-star ${po.priority ? 'active' : ''}">★</span></div>
+            ${po.isPrepaid ? '<span style="background:#DBEAFE;color:#1E40AF;padding:4px 12px;border-radius:30px;font-size:12px;">Prepaid</span>' : '<span style="background:#FEF3C7;color:#92400E;padding:4px 12px;border-radius:30px;font-size:12px;">Pending</span>'}
           </div>
-          <div style="color:#666; margin-bottom:10px; font-size:clamp(12px,2vw,14px);">${po.items.map(i => `${i.name} ×${i.qty}`).join(', ')}</div>
-          <div style="font-size:clamp(1.1rem,2.5vw,1.3rem); font-weight:700; color:var(--primary); margin-bottom:14px;">${fmt(po.total)}</div>
-          <div style="display:flex; gap:8px;">
-            <button onclick="editPreorder(${po.id})" style="flex:1;padding:12px;background:#64748B;color:white;border:none;border-radius:10px;cursor:pointer;font-size:clamp(12px,2vw,14px);min-height:40px;">Edit</button>
-            <button onclick="collectPreorder(${po.id})" class="po-collect-btn" style="flex:1;font-size:clamp(12px,2vw,14px);min-height:40px;">✓ Collect</button>
-            <button onclick="deletePreorder(${po.id})" class="po-delete-btn" style="min-height:40px;">✕</button>
+          <div style="color:#666; margin-bottom:12px;">${po.items.map(i => `${i.name} ×${i.qty}`).join(', ')}</div>
+          <div style="font-size:1.3rem; font-weight:700; color:var(--primary); margin-bottom:16px;">${fmt(po.total)}</div>
+          <div style="display:flex; gap:10px;">
+            <button onclick="editPreorder(${po.id})" style="flex:1;padding:12px;background:#64748B;color:white;border:none;border-radius:12px;cursor:pointer;">Edit</button>
+            <button onclick="collectPreorder(${po.id})" class="po-collect-btn" style="flex:1;">✓ Collect</button>
+            <button onclick="deletePreorder(${po.id})" class="po-delete-btn">✕</button>
           </div>
         </div>
       `).join('');
     }
 
-    // ====================== CSV IMPORT ======================
     function importCSV(input) {
       const file = input.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(e) {
         const csv = e.target.result;
         const lines = csv.trim().split('\n');
-        if (lines.length < 2) {
-          alert("CSV file is empty or invalid.");
-          return;
-        }
-
+        if (lines.length < 2) { alert("CSV file is empty or invalid."); return; }
         const headers = lines[0].split(',').map(h => h.trim());
         const nameIndex = headers.findIndex(h => h.toLowerCase().includes('customer') || h.toLowerCase().includes('name'));
-
-        if (nameIndex === -1) {
-          alert("CSV must have a column with 'Customer Name' or similar.");
-          return;
-        }
-
+        if (nameIndex === -1) { alert("CSV must have a column with 'Customer Name'."); return; }
         let added = 0;
         const nextId = preorders.length > 0 ? Math.max(...preorders.map(p => p.id)) + 1 : 1;
-
         for (let i = 1; i < lines.length; i++) {
           const values = lines[i].split(',').map(v => v.trim());
           if (!values[nameIndex]) continue;
-
           const customerName = values[nameIndex];
-          const items = [];
-          let total = 0;
-
-          ITEMS.forEach((item, idx) => {
+          const items = []; let total = 0;
+          ITEMS.forEach((item) => {
             const colIndex = headers.findIndex(h => h.toLowerCase().includes(item.name.toLowerCase().replace(/ /g,'')));
             if (colIndex !== -1) {
               const qty = parseInt(values[colIndex]) || 0;
-              if (qty > 0) {
-                items.push({id: item.id, name: item.name, price: item.price, qty});
-                total += item.price * qty;
-              }
+              if (qty > 0) { items.push({id: item.id, name: item.name, price: item.price, qty}); total += item.price * qty; }
             }
           });
-
-          if (items.length > 0) {
-            preorders.push({
-              id: nextId + added,
-              name: customerName,
-              items,
-              total,
-              collected: false,
-              isPrepaid: false,
-              priority: false,
-              deviceId
-            });
-            added++;
-          }
+          if (items.length > 0) { preorders.push({ id: nextId + added, name: customerName, items, total, collected: false, isPrepaid: false, priority: false, deviceId }); added++; }
         }
-
         savePreordersToFirebase();
+        renderPoList();
+        renderToBake();
         alert(`Successfully imported ${added} pre-order(s) from CSV!`);
         input.value = '';
       };
@@ -1145,174 +867,36 @@
     }
 
     function renderToBake() {
-      const toBake = {};
-      const customers = {};
-
-      ITEMS.forEach(i => {
-        toBake[i.id] = 0;
-        customers[i.id] = [];
-      });
-
-      preorders.filter(p => !p.collected).forEach(po => {
-        po.items.forEach(item => {
-          toBake[item.id] += item.qty;
-          customers[item.id].push(po.name);
-        });
-      });
-
-      let html = '<h3 style="margin-bottom:14px; color:#92400E;">Needed Today</h3>';
-
-      ITEMS.forEach(item => {
-        if (toBake[item.id] > 0) {
-          html += `
-            <div style="padding:10px 0; border-bottom:1px solid #f5e8c7;">
-              <div style="display:flex; justify-content:space-between; font-weight:600; font-size:clamp(13px,2vw,14px);">
-                <span>${item.name}</span>
-                <span style="color:#92400E;">${toBake[item.id]}</span>
-              </div>
-              <div style="margin-top:4px;">
-                ${customers[item.id].map(name => `<span class="customer-name">${name}</span>`).join(', ')}
-              </div>
-            </div>`;
-        }
-      });
-
-      if (Object.values(toBake).every(q => q === 0)) {
-        html += '<p style="color:#888;text-align:center;padding:30px 0;">No pre-orders pending</p>';
-      }
-
+      const toBake = {}; const customers = {};
+      ITEMS.forEach(i => { toBake[i.id] = 0; customers[i.id] = []; });
+      preorders.filter(p => !p.collected).forEach(po => { po.items.forEach(item => { toBake[item.id] += item.qty; customers[item.id].push(po.name); }); });
+      let html = '<h3 style="margin-bottom:16px; color:#92400E;">Needed Today</h3>';
+      ITEMS.forEach(item => { if (toBake[item.id] > 0) { html += `<div style="padding:10px 0; border-bottom:1px solid #f5e8c7;"><div style="display:flex; justify-content:space-between; font-weight:600;"><span>${item.name}</span><span style="color:#92400E;">${toBake[item.id]}</span></div><div style="margin-top:4px;">${customers[item.id].map(name => `<span class="customer-name">${name}</span>`).join(', ')}</div></div>`; } });
+      if (Object.values(toBake).every(q => q === 0)) html += '<p style="color:#888;text-align:center;padding:30px 0;">No pre-orders pending</p>';
       document.getElementById('to-bake-list').innerHTML = html;
     }
 
-    // Summary
     function renderInvoice() {
       const box = document.getElementById('invoice-box');
       if (!box) return;
-      
       const totalEarned = sales.reduce((a, s) => a + (s.total || 0), 0);
       const totalSold = ITEMS.reduce((s, i) => s + (flavourTotals[i.id] || 0), 0);
       const txns = sales.length;
-
-      if (!txns) {
-        box.innerHTML = `<p style="text-align:center; color:#888; font-size:clamp(1rem,2vw,1.1rem); padding:60px 0;">No sales recorded yet today.</p>`;
-        return;
-      }
-
+      if (!txns) { box.innerHTML = `<p style="text-align:center; color:#888; font-size:1.1rem; padding:80px 0;">No sales recorded yet today.</p>`; return; }
       const invNo = 'INV-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(txns).padStart(3,'0');
-
       let flavourRows = '';
-      ITEMS.forEach(i => {
-        const qty = flavourTotals[i.id] || 0;
-        const earned = qty * i.price;
-        flavourRows += `
-          <tr style="border-bottom:1px solid #eee;">
-            <td style="padding:10px 0; font-size:clamp(12px,2vw,14px);">${i.name}</td>
-            <td style="padding:10px 0; text-align:right; font-size:clamp(12px,2vw,14px);">${fmt(i.price)}</td>
-            <td style="padding:10px 0; text-align:right; font-size:clamp(12px,2vw,14px);">${qty}</td>
-            <td style="padding:10px 0; text-align:right; font-weight:600; font-size:clamp(12px,2vw,14px);">${fmt(earned)}</td>
-          </tr>`;
-      });
-
-      let txRows = [...sales].reverse().map(s => {
-        let labelText = s.label || 'Walk-in';
-        if (s.isPrepaid && s.preorderId) {
-          const po = preorders.find(p => p.id === s.preorderId);
-          if (po) {
-            labelText = po.name + ' (Prepaid)';
-          }
-        }
-        
-        return `
-        <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #eee; font-size:clamp(12px,2vw,14px);">
-          <div style="min-width:0; padding-right:8px;">
-            <div>#${s.id} — ${labelText}</div>
-            <div style="font-size:12px; color:#666; word-break:break-word;">${s.summary}</div>
-          </div>
-          <div style="text-align:right; flex-shrink:0;">
-            <div style="font-weight:700;">${fmt(s.total)}</div>
-            <div style="font-size:11px; color:#888;">${s.time}</div>
-          </div>
-        </div>
-      `}).join('');
-
-      box.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px; padding-bottom:20px; border-bottom:3px solid #eee; flex-wrap:wrap; gap:12px;">
-          <div>
-            <div style="font-size:clamp(1.4rem,4vw,2.4rem); font-weight:800; letter-spacing:-0.03em;">Kassav Vero co.</div>
-            <div style="color:#666; margin-top:4px; font-size:clamp(12px,2vw,14px);">Fresh baked daily</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:12px; color:#666;">Invoice</div>
-            <div style="font-size:clamp(1rem,2.5vw,1.3rem); font-weight:700;">${invNo}</div>
-            <div style="margin-top:8px;">
-              <div style="font-size:12px; color:#666;">Date</div>
-              <div style="font-weight:600; font-size:clamp(12px,2vw,14px);">${today()}</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; margin-bottom:30px;">
-          <div style="background:#F8F7F2; padding:clamp(14px,2vw,20px); border-radius:14px; text-align:center;">
-            <div style="font-size:clamp(1.3rem,3vw,2rem); font-weight:700;">${txns}</div>
-            <div style="color:#666; font-size:clamp(11px,2vw,13px);">Transactions</div>
-          </div>
-          <div style="background:#F8F7F2; padding:clamp(14px,2vw,20px); border-radius:14px; text-align:center;">
-            <div style="font-size:clamp(1.3rem,3vw,2rem); font-weight:700;">${totalSold}</div>
-            <div style="color:#666; font-size:clamp(11px,2vw,13px);">Kassavas Sold</div>
-          </div>
-          <div style="background:#F8F7F2; padding:clamp(14px,2vw,20px); border-radius:14px; text-align:center;">
-            <div style="font-size:clamp(1.3rem,3vw,2rem); font-weight:700;">${preorders.filter(p=>p.collected).length}</div>
-            <div style="color:#666; font-size:clamp(11px,2vw,13px);">Orders fullfilled</div>
-          </div>
-        </div>
-
-        <h3 style="margin:24px 0 14px; font-size:clamp(0.9rem,2vw,1.1rem); color:#555;">Flavour Breakdown</h3>
-        <div class="table-wrap">
-        <table style="width:100%; border-collapse:collapse; margin-bottom:30px; min-width:350px;">
-          <thead>
-            <tr style="border-bottom:2px solid #ddd;">
-              <th style="text-align:left; padding:8px 0; font-weight:600; font-size:clamp(11px,2vw,13px);">Flavour</th>
-              <th style="text-align:right; padding:8px 0; font-weight:600; font-size:clamp(11px,2vw,13px);">Price</th>
-              <th style="text-align:right; padding:8px 0; font-weight:600; font-size:clamp(11px,2vw,13px);">Qty</th>
-              <th style="text-align:right; padding:8px 0; font-weight:600; font-size:clamp(11px,2vw,13px);">Amount</th>
-            </tr>
-          </thead>
-          <tbody>${flavourRows}</tbody>
-        </table>
-        </div>
-
-        <div style="border-top:3px solid #ddd; padding-top:20px; font-size:clamp(1.3rem,3vw,1.6rem); font-weight:700; display:flex; justify-content:space-between;">
-          <span>Total Earned</span>
-          <span style="color:var(--primary);">${fmt(totalEarned)}</span>
-        </div>
-
-        <h3 style="margin:30px 0 14px; font-size:clamp(0.9rem,2vw,1.1rem); color:#555;">Transaction Log</h3>
-        <div>${txRows}</div>
-
-        <div style="text-align:center; margin-top:40px; color:#888; font-size:clamp(12px,2vw,14px);">
-          Thank you for supporting Kassav Vero. ❤️
-        </div>
-      `;
+      ITEMS.forEach(i => { const qty = flavourTotals[i.id] || 0; const earned = qty * i.price; flavourRows += `<tr style="border-bottom:1px solid #eee;"><td style="padding:12px 0;">${i.name}</td><td style="padding:12px 0; text-align:right;">${fmt(i.price)}</td><td style="padding:12px 0; text-align:right;">${qty}</td><td style="padding:12px 0; text-align:right; font-weight:600;">${fmt(earned)}</td></tr>`; });
+      let txRows = [...sales].reverse().map(s => `<div style="display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid #eee;"><div><div>#${s.id} ${s.label ? '— ' + s.label : ''}</div><div style="font-size:13px; color:#666;">${s.summary}</div></div><div style="text-align:right;"><div style="font-weight:700;">${fmt(s.total)}</div><div style="font-size:12px; color:#888;">${s.time}</div></div></div>`).join('');
+      box.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:40px; padding-bottom:30px; border-bottom:3px solid #eee;"><div><div style="font-size:2.4rem; font-weight:800; letter-spacing:-0.03em;">Kassav Vero co.</div><div style="color:#666; margin-top:4px;">Fresh baked daily</div></div><div style="text-align:right;"><div style="font-size:13px; color:#666;">Invoice</div><div style="font-size:1.3rem; font-weight:700;">${invNo}</div><div style="margin-top:12px;"><div style="font-size:13px; color:#666;">Date</div><div style="font-weight:600;">${today()}</div></div></div></div><div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-bottom:40px;"><div style="background:#F8F7F2; padding:20px; border-radius:16px; text-align:center;"><div style="font-size:2rem; font-weight:700;">${txns}</div><div style="color:#666;">Transactions</div></div><div style="background:#F8F7F2; padding:20px; border-radius:16px; text-align:center;"><div style="font-size:2rem; font-weight:700;">${totalSold}</div><div style="color:#666;">Kassavas Sold</div></div><div style="background:#F8F7F2; padding:20px; border-radius:16px; text-align:center;"><div style="font-size:2rem; font-weight:700;">${preorders.filter(p=>p.collected).length}</div><div style="color:#666;">Orders fullfilled</div></div></div><h3 style="margin:30px 0 16px; font-size:1.1rem; color:#555;">Flavour Breakdown</h3><table style="width:100%; border-collapse:collapse; margin-bottom:40px;"><thead><tr style="border-bottom:2px solid #ddd;"><th style="text-align:left; padding:10px 0; font-weight:600;">Flavour</th><th style="text-align:right; padding:10px 0; font-weight:600;">Price</th><th style="text-align:right; padding:10px 0; font-weight:600;">Qty</th><th style="text-align:right; padding:10px 0; font-weight:600;">Amount</th></tr></thead><tbody>${flavourRows}</tbody></table><div style="border-top:3px solid #ddd; padding-top:24px; font-size:1.4rem; font-weight:700; display:flex; justify-content:space-between;"><span>Total Earned</span><span style="color:var(--primary);">${fmt(totalEarned)}</span></div><h3 style="margin:40px 0 16px; font-size:1.1rem; color:#555;">Transaction Log</h3><div>${txRows}</div><div style="text-align:center; margin-top:60px; color:#888; font-size:14px;">Thank you for supporting Kassav Vero. ❤️</div>`;
     }
 
     function clearSales() {
       if (!confirm('Clear all sales and reset the day?')) return;
-      
       database.ref('sales').set(null);
       database.ref('preorders').set(null);
-      
-      sales = [];
-      preorders = [];
-      txCount = 0;
-      poCount = 0;
-      newPoCount = 0;
-      lastKnownPoIds = new Set();
-      updateBadge();
+      sales = []; preorders = []; txCount = 0; poCount = 0; newPoCount = 0; lastKnownPoIds = new Set(); updateBadge();
       ITEMS.forEach(i => flavourTotals[i.id] = 0);
-      
-      renderSalesList();
-      renderPoList();
-      renderToBake();
+      renderSalesList(); renderPoList(); renderToBake();
     }
 
     function switchTab(id, el) {
@@ -1320,16 +904,8 @@
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.getElementById('page-' + id).classList.add('active');
       el.classList.add('active');
-      
-      if (id === 'preorders') {
-        newPoCount = 0;
-        updateBadge();
-      }
-      
+      if (id === 'preorders') { newPoCount = 0; updateBadge(); renderPoList(); renderToBake(); }
       if (id === 'summary') renderInvoice();
-      if (id === 'preorders') renderToBake();
-      
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // Initialize
