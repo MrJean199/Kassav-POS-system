@@ -263,6 +263,21 @@
       font-weight: 600;
       letter-spacing: 0.3px;
     }
+
+    .delete-btn {
+      padding: 6px 12px;
+      background: #FFF1F1;
+      color: var(--danger);
+      border: 1px solid #F5B8B8;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .delete-btn:hover {
+      background: #FEE2E2;
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
@@ -376,15 +391,17 @@
   <script>
     // ==================== FIREBASE SETUP ====================
     const firebaseConfig = {
-      apiKey: "AIzaSyDYepQFNnNjblF77Qg0S6vTsi2NvJHYD_k",
-      authDomain: "idk123-9459a.firebaseapp.com",
-      databaseURL: "https://idk123-9459a-default-rtdb.firebaseio.com",
-      projectId: "idk123-9459a",
-      storageBucket: "idk123-9459a.firebasestorage.app",
-      messagingSenderId: "588708922308",
-      appId: "1:588708922308:web:0e429c99fd9cc530025a91"
+      apiKey: "AIzaSyC5XZ6o4JKUIrYP2uK7bavdski7mUFcP4g",
+      authDomain: "another-one-47b4f.firebaseapp.com",
+      databaseURL: "https://another-one-47b4f-default-rtdb.firebaseio.com",
+      projectId: "another-one-47b4f",
+      storageBucket: "another-one-47b4f.firebasestorage.app",
+      messagingSenderId: "742566262798",
+      appId: "1:742566262798:web:f13c4a40760fdb3e3da45f",
+      measurementId: "G-8PC33EM9FG"
     };
 
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     
@@ -635,14 +652,22 @@
       saveSalesToFirebase();
     }
 
-    function deleteTransaction(saleId) {
-      if (!confirm('Are you sure you want to delete this transaction? This cannot be undone.')) return;
+    // ==================== DELETE FUNCTION - FIXED ====================
+    window.deleteTransaction = function(saleId) {
+      if (!confirm('Are you sure you want to delete this transaction? This cannot be undone.')) {
+        return;
+      }
       
+      // Find the sale index
       const saleIndex = sales.findIndex(s => s.id === saleId);
-      if (saleIndex === -1) return;
+      if (saleIndex === -1) {
+        alert('Transaction not found.');
+        return;
+      }
       
       const sale = sales[saleIndex];
       
+      // If this sale is linked to a pre-order, mark that pre-order as uncollected
       if (sale.preorderId) {
         const po = preorders.find(p => p.id === sale.preorderId);
         if (po) { 
@@ -651,13 +676,18 @@
         }
       }
       
+      // Remove the sale from the array
       sales.splice(saleIndex, 1);
+      
+      // Save to Firebase - this will trigger the listener and update the UI
       saveSalesToFirebase();
+      
+      // Also manually update UI immediately for instant feedback
       renderSalesList();
       renderInvoice();
       renderPoList();
       renderToBake();
-    }
+    };
 
     function renderSalesList() {
       const sl = document.getElementById('sales-list');
@@ -666,18 +696,26 @@
         document.getElementById('day-total').textContent = '$0.00';
         return;
       }
-      sl.innerHTML = [...sales].reverse().map(s => `
-        <div style="padding:14px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-          <div style="flex:1;">
-            <div style="font-size:12.5px; color:#888;">#${s.id} ${s.label ? '· ' + s.label : ''} • ${s.time}</div>
-            <div style="color:#555;">${s.summary}</div>
-            <div style="font-weight:700; color:${s.isPrepaid ? '#64748B' : 'var(--primary)'}; margin-top:6px;">
-              ${s.isPrepaid ? '(Prepaid)' : fmt(s.total)}
+      
+      let html = '';
+      const sortedSales = [...sales].reverse();
+      sortedSales.forEach(s => {
+        html += `
+          <div style="padding:14px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <div style="flex:1;">
+              <div style="font-size:12.5px; color:#888;">#${s.id} ${s.label ? '· ' + s.label : ''} • ${s.time}</div>
+              <div style="color:#555;">${s.summary}</div>
+              <div style="font-weight:700; color:${s.isPrepaid ? '#64748B' : 'var(--primary)'}; margin-top:6px;">
+                ${s.isPrepaid ? '(Prepaid)' : fmt(s.total)}
+              </div>
             </div>
+            <button onclick="window.deleteTransaction(${s.id})" class="delete-btn">Delete</button>
           </div>
-          <button onclick="deleteTransaction(${s.id})" style="padding:6px 12px; background:#FFF1F1; color:var(--danger); border:1px solid #F5B8B8; border-radius:8px; cursor:pointer; font-weight:600;">Delete</button>
-        </div>
-      `).join('');
+        `;
+      });
+      
+      sl.innerHTML = html;
+      
       const dayTotal = sales.reduce((a, s) => a + (s.total || 0), 0);
       document.getElementById('day-total').textContent = fmt(dayTotal);
     }
