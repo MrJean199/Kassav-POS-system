@@ -389,16 +389,15 @@
   </div>
 
   <script>
-    // ==================== FIREBASE SETUP ====================
+    // ==================== FIREBASE SETUP (UPDATED CREDENTIALS) ====================
     const firebaseConfig = {
-      apiKey: "AIzaSyC5XZ6o4JKUIrYP2uK7bavdski7mUFcP4g",
-      authDomain: "another-one-47b4f.firebaseapp.com",
-      databaseURL: "https://another-one-47b4f-default-rtdb.firebaseio.com",
-      projectId: "another-one-47b4f",
-      storageBucket: "another-one-47b4f.firebasestorage.app",
-      messagingSenderId: "742566262798",
-      appId: "1:742566262798:web:f13c4a40760fdb3e3da45f",
-      measurementId: "G-8PC33EM9FG"
+      apiKey: "AIzaSyD7YlzpIN-0rVJm9YaUwPIji6PGf79jIXY",
+      authDomain: "idkj-26a16.firebaseapp.com",
+      projectId: "idkj-26a16",
+      storageBucket: "idkj-26a16.firebasestorage.app",
+      messagingSenderId: "986397919641",
+      appId: "1:986397919641:web:57e80208395a74ebde6b08",
+      measurementId: "G-YQJ76RH18N"
     };
 
     // Initialize Firebase
@@ -652,13 +651,12 @@
       saveSalesToFirebase();
     }
 
-    // ==================== DELETE FUNCTION - FIXED ====================
+    // ==================== DELETE FUNCTION ====================
     window.deleteTransaction = function(saleId) {
       if (!confirm('Are you sure you want to delete this transaction? This cannot be undone.')) {
         return;
       }
       
-      // Find the sale index
       const saleIndex = sales.findIndex(s => s.id === saleId);
       if (saleIndex === -1) {
         alert('Transaction not found.');
@@ -667,7 +665,6 @@
       
       const sale = sales[saleIndex];
       
-      // If this sale is linked to a pre-order, mark that pre-order as uncollected
       if (sale.preorderId) {
         const po = preorders.find(p => p.id === sale.preorderId);
         if (po) { 
@@ -676,13 +673,8 @@
         }
       }
       
-      // Remove the sale from the array
       sales.splice(saleIndex, 1);
-      
-      // Save to Firebase - this will trigger the listener and update the UI
       saveSalesToFirebase();
-      
-      // Also manually update UI immediately for instant feedback
       renderSalesList();
       renderInvoice();
       renderPoList();
